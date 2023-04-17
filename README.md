@@ -11,6 +11,23 @@ ShiveWorks - a dynamic material research project at WPI
 * Enter correct local WiFi credential and MQTT broker IP address in credentials.h
 * Compile and upload main.c to the ESP32
 
+## Overseer.py
+  * This scrips is used as a main translator between the simulation and the segments
+  * It is command line based, and any command that is typed in will be sent to the segments accordingly
+
+| Command     | Action                                                           |
+| ----------- | ---------------------------------------------------------------- |
+| start       | Starts the countdown of 3 seconds                                |
+| stop        | Halts the experiment immediately                                 |
+| reset       | Resets all segments to pre-experiment stage                      |
+| upload      | Uploads the experiment parameters to all segments individually   |
+| timesync    | Syncs the time of the segments with NTP, syncs overseer with NTP |
+| assign:42   | Assigns any currently available segments to position 42          |
+| upload:42   | Uploads the experiment parameters to segment 42                  |
+| timesync:42 | Syncs the time of segment 42 with NTP                            |
+
+
+# Experiment Setup
 ## Segment Power Up and Identification
 * Power up the segment - upon initialization the indicator light should light up blue
 * ESP32 will connect to the local MQTT broker - upon connection the indicator light should blink blue
@@ -19,7 +36,7 @@ ShiveWorks - a dynamic material research project at WPI
   * This is an equivalent to a command line that all segments will listen to
 * For newly flashed segments, the sequence number will have to be assigned
   * Press the button on the segment to initiate the sequence number assignment - the indicator light should start blink purple
-  * By typing `assign:42` into the command line and sending that to the masterCommand topic, the segment will be assigned to position 42
+  * By typing `assign:42` into the python script command line and sending that to the masterCommand topic, the segment will be assigned to position 42
   * Indicator light will turn purple solid to indicate the sequence number has been received and saved
 * Each segment will then subscribe to the topic `shiveworks/segment/42` where 42 is the sequence number of the segment
   * This is an equivalent to a command line that only the segment will listen to

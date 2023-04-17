@@ -1,6 +1,11 @@
-# ShiveWorks
-ShiveWorks - a dynamic material research project at WPI
+# ShiveWorks 
+**ShiveWorks - a dynamic material research project at WPI**
 
+## Contributors
+* Project Lead: @[William Sanguinet](https://github.com/williamsanguinet)
+* Engineer Lead: @[Jakub Jandus](https://github.com/BambusGS)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
 # How to get started:

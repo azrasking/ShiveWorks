@@ -2,6 +2,7 @@
 **ShiveWorks - a dynamic material research project at WPI**
 
 * The purpose of this project is to create a device that demonstrates several concepts from the theory of dynamic materials.
+* It has been in works for a long time
 
 
 ## Contributors

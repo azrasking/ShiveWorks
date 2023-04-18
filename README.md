@@ -53,9 +53,20 @@
 * All source files are in WaveSegment folder, in the 'src' directory
 * Enter correct local WiFi credential and MQTT broker IP address in credentials.h (rename and fill out sample_credentials.h)
 * Compile and upload main.c to the ESP32
-* Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
+<!-- * Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
   * Compile and upload main.c to the ESP32
-  * Run `python3 OTA.py` to upload the sketch to the ESP32 over WiFi
+  * Run `python3 OTA.py` to upload the sketch to the ESP32 over WiFi -->
+![Segment Circuit](./Media/ShiveSegmentCircuit.png)
+### Component List
+* ESP32 DevKitV1
+* MPU6050 Accelerometer/Gyroscope
+* WS2812B RGB LED 2x
+* MG90D Servo 2x
+* Logic Level Converter 3.3V to 5V
+* Voltage Regulator to 5V
+* Push Button
+* LiPo Battery 3.7V 800mAh 2x
+  
 ## Segment Power Up and Identification
 * Power up the segment - upon initialization the indicator light should light up blue
 * ESP32 will connect to the local MQTT broker - upon connection the indicator light should blink blue
@@ -71,18 +82,18 @@
   * Used for sending experiment parameters to the segment, and gathering scientific data 
 
  
-| Segment Status                      | LED Indicator Light |
-| ----------------------------------- | ------------------- |
-| Initializing                        | Blue Blinking       |
-| Connected to MQTT Broker            | Blue Solid          |
-| Segment Position Identification     | Purple Blinking     |
-| Segment Position Received and Saved | Purple Solid        |
-| Downloading Experiment              | Yellow Blinking     |
-| Ready for Experiment                | Green Blinking      |
-| Experiment Running                  | Green Solid         |
-| E-Stop                              | Red Blinking        |
-| Fault                               | Red Solid           |
-|                                     |                     |
+| Segment Status                    | LED Indicator Light |
+| --------------------------------- | ------------------- |
+| Initializing                      | Blue Blinking       |
+| Connected to Wifi and MQTT Broker | Blue Solid          |
+| Segment Position Pairing          | Purple Blinking     |
+| Segment Position Paired           | Purple Solid        |
+| Downloading Experiment            | Yellow Blinking     |
+| Ready for Experiment              | Green Blinking      |
+| Experiment Running                | Green Solid         |
+| E-Stop                            | Red Blinking        |
+| Fault                             | Red Solid           |
+|                                   |                     |
 
 | Button Press      | Action                               |
 | ----------------- | ------------------------------------ |

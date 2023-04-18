@@ -1,3 +1,7 @@
+# Jakub Jandus 2023
+# Overseer class for the ShiveWorks project
+# This class is responsible for the communication with the segments and the movement of the segments
+
 import paho.mqtt.client as mqtt
 import csv
 import time

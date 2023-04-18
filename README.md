@@ -20,14 +20,6 @@
   * Go to the mosquitto installation directory (`cd C:\Program Files\mosquitto`), open terminal and run `mosquitto -v --config-file {{path/to/file.conf}` to start the broker
   * Make sure the network is set to "Private" in the Windows Firewall settings
 
-## ESP32 Segment Code Upload
-* Segments are numbered starting from 1
-* Enter correct local WiFi credential and MQTT broker IP address in credentials.h (rename and fill out sample_credentials.h)
-* Compile and upload main.c to the ESP32
-* Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
-  * Compile and upload main.c to the ESP32
-  * Run `python3 OTA.py` to upload the sketch to the ESP32 over WiFi
-
 ## Overseer.py
   * Download and install [paho](https://pypi.org/project/paho-mqtt/)
   * This scrips is used as a main translator between the simulation and the segments
@@ -56,6 +48,14 @@
 
 
 # Experiment Setup
+## ESP32 Segment Code Upload
+* Segments are numbered starting from 1
+* All source files are in WaveSegment folder, in the 'src' directory
+* Enter correct local WiFi credential and MQTT broker IP address in credentials.h (rename and fill out sample_credentials.h)
+* Compile and upload main.c to the ESP32
+* Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
+  * Compile and upload main.c to the ESP32
+  * Run `python3 OTA.py` to upload the sketch to the ESP32 over WiFi
 ## Segment Power Up and Identification
 * Power up the segment - upon initialization the indicator light should light up blue
 * ESP32 will connect to the local MQTT broker - upon connection the indicator light should blink blue

@@ -2,34 +2,44 @@
 **ShiveWorks - a dynamic material research project at WPI**
 
 ## Contributors
-* Project Lead: @[William Sanguinet](https://github.com/williamsanguinet)
-* Engineer Lead: @[Jakub Jandus](https://github.com/BambusGS)
+* Project Lead: @[William Sanguinet](https://github.com/williamsanguinet) | wcsanguinet@wpi.edu
+* Engineer Lead: @[Jakub Jandus](https://github.com/BambusGS) | jjandus@wpi.edu
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
 # How to get started:
 ## MQTT Broker Installation
-* Download and install the latest mosquitto broker (https://mosquitto.org/download/)
+* Download and install the latest [mosquitto MQTT broker](https://mosquitto.org/download/)
+* Linux
+  * Run `mosquitto -v --config-file {{path/to/file.conf}}` to start the broker
+* Windows
+  * Go to the mosquitto installation directory (`cd C:\Program Files\mosquitto`), open terminal and run `mosquitto -v --config-file {{path/to/file.conf}` to start the broker
+  * Make sure the network is set to "Private" in the Windows Firewall settings
 
 ## ESP32 Segment Code Upload
-* Enter correct local WiFi credential and MQTT broker IP address in credentials.h
+* Enter correct local WiFi credential and MQTT broker IP address in credentials.h (rename and fill out sample_credentials.h)
 * Compile and upload main.c to the ESP32
+* Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
+  * Compile and upload main.c to the ESP32
+  * Run `python3 OTA.py` to upload the sketch to the ESP32 over WiFi
 
 ## Overseer.py
+  * Download and install [paho](https://pypi.org/project/paho-mqtt/)
   * This scrips is used as a main translator between the simulation and the segments
   * It is command line based, and any command that is typed in will be sent to the segments accordingly
 
-| Command     | Action                                                           |
-| ----------- | ---------------------------------------------------------------- |
-| start       | Starts the countdown of 3 seconds                                |
-| stop        | Halts the experiment immediately                                 |
-| reset       | Resets all segments to pre-experiment stage                      |
-| upload      | Uploads the experiment parameters to all segments individually   |
-| timesync    | Syncs the time of the segments with NTP, syncs overseer with NTP |
-| assign:42   | Assigns any currently available segments to position 42          |
-| upload:42   | Uploads the experiment parameters to segment 42                  |
-| timesync:42 | Syncs the time of segment 42 with NTP                            |
+| Command      | Action                                                           |
+| ------------ | ---------------------------------------------------------------- |
+| start        | Starts the countdown of 3 seconds                                |
+| stop         | Halts the experiment immediately                                 |
+| reset        | Resets all segments to pre-experiment stage                      |
+| upload       | Uploads the experiment parameters to all segments individually   |
+| timesync     | Syncs the time of the segments with NTP, syncs overseer with NTP |
+| exit         | Exits the script                                                 |
+| assign -s 42   | Assigns any currently available segments to position 42          |
+| upload -s 42   | Uploads the experiment parameters to segment 42                  |
+| timesync -s 42 | Syncs the time of segment 42 with NTP                            |
 
 
 # Experiment Setup
@@ -37,13 +47,13 @@
 * Power up the segment - upon initialization the indicator light should light up blue
 * ESP32 will connect to the local MQTT broker - upon connection the indicator light should blink blue
   * If the segment is unable to connect to the MQTT broker, the indicator light will become solid red indicating a fault
-* Once connected to the MQTT broker, the segment will automatically subscribe to the topic `shiveworks/masterCommand`
+* Once connected to the MQTT broker, the segment will automatically subscribe to the topic `shiveworks/overseer`
   * This is an equivalent to a command line that all segments will listen to
 * For newly flashed segments, the sequence number will have to be assigned
   * Press the button on the segment to initiate the sequence number assignment - the indicator light should start blink purple
-  * By typing `assign:42` into the python script command line and sending that to the masterCommand topic, the segment will be assigned to position 42
+  * By typing `assign -s 42` into the python script command line and sending that to the masterCommand topic, the segment will be assigned to position 42
   * Indicator light will turn purple solid to indicate the sequence number has been received and saved
-* Each segment will then subscribe to the topic `shiveworks/segment/42` where 42 is the sequence number of the segment
+* Each segment will then subscribe to the topic `shiveworks/segment/ID` where ID represents a unique ID for each segment is the sequence number of the segment
   * This is an equivalent to a command line that only the segment will listen to
   * Used for sending experiment parameters to the segment, and gathering scientific data 
 

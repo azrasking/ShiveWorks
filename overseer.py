@@ -4,7 +4,7 @@ import time
 
 # ---TODO--- #
 # 1. get the segment status stored in a list
-
+# 2. get the movement function up and running
 
 
 # ---------------------- MQTT Setup----------------------#
@@ -23,16 +23,24 @@ client = mqtt.Client("Master PC")
 
 
 def main():  # main method where the MQTT client is connected
-    client.connect(broker, port)
+    # try to connect to the broker, if not successful wait 5 seconds and try again
+    while True:
+        try:
+            client.connect(broker, port)
+            break
+        except:
+            print("Connection to broker failed, retrying in 5 seconds...")
+            time.sleep(5)
+
     client.subscribe(overseerReturnPath, 1)
     client.loop_start()
     client.on_message = on_message
     loadSegmentsID()
 
 
-# --- Callback functions ---#
+# --- MQTT Received Message Callback functions ---#
 latestOverseerReturnMessage = ""  # global storage of the latest message received
-statusList = []  # list of the status of all segments
+statusList = []  # list of the status of all segments ordered by segment number
 
 
 def on_message(client, userdata, message):
@@ -41,6 +49,15 @@ def on_message(client, userdata, message):
     # filter only the return messages
     if (message.topic == overseerReturnPath):
         latestOverseerReturnMessage = str(message.payload.decode("utf-8"))
+
+    # filter only the status messages
+    elif (message.topic.startswith(segmentPath)):
+        # get the segment ID from the topic -> convert it to the segment number
+        segment_no = getSegmentNumber(message.topic.split("/")[2])
+        # get the status from the message
+        status = str(message.payload.decode("utf-8"))
+        # store the status in the list
+        statusList[segment_no - 1] = status
 
 
 # ---------------------- Dealing with segment identification ----------------------#
@@ -56,6 +73,14 @@ def getSegmentID(segment_no):
     except IndexError:
         print("Segment number out of range or non-existent")
         return int(-1)
+
+
+# get the segment number from the ID and return it as an integer (-1 if not found)
+def getSegmentNumber(segmentID):
+    for i in range(len(segments_ID)):
+        if segments_ID[i] == segmentID:
+            return i + 1
+    return -1
 
 
 def addSegmentID(segment_no):  # add a segment ID to the list and save it to a .csv file
@@ -143,10 +168,10 @@ def upload_segment(segment_no, data):  # upload data from a specific segment
 def get_segment_status(segment_no):  # get the status of a specific segment
     client.publish(segmentPathFn(segment_no, "command"), "status_report", 1)
     time.sleep(0.25)  # wait for the status report to be published
-    try: 
+    try:
         return statusList[int(segment_no - 1)]
     except IndexError:
-        return("Segment does not have a reported status yet")
+        return ("Segment does not have a reported status yet")
 
 
 # ---------------------- Manual Commands ----------------------#
@@ -182,6 +207,14 @@ while True:
             segment_no = args[args.index('-s') + 1]
             print("Uploading data to segment # {}".format(segment_no))
             upload_segment(segment_no, "TEST_DATA_STRING")
+
+        # case ["move"]:
+        #     print("Moving all segments")
+        #     client.publish(overseerCommandPath, "move::", 1)
+
+        # case ["move", *args] if '-s' in args:  # move a specific segment
+        #     segment_no = args[args.index('-s') + 1]
+        #     print("Moving the segment # {}".format(segment_no))
 
         case ["timesync"]:
             print("Syncing time in all segments")

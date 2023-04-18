@@ -18,6 +18,7 @@
   * Make sure the network is set to "Private" in the Windows Firewall settings
 
 ## ESP32 Segment Code Upload
+* Segments are numbered starting from 1
 * Enter correct local WiFi credential and MQTT broker IP address in credentials.h (rename and fill out sample_credentials.h)
 * Compile and upload main.c to the ESP32
 * Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
@@ -29,14 +30,14 @@
   * This scrips is used as a main translator between the simulation and the segments
   * It is command line based, and any command that is typed in will be sent to the segments accordingly
 
-| Command      | Action                                                           |
-| ------------ | ---------------------------------------------------------------- |
-| start        | Starts the countdown of 3 seconds                                |
-| stop         | Halts the experiment immediately                                 |
-| reset        | Resets all segments to pre-experiment stage                      |
-| upload       | Uploads the experiment parameters to all segments individually   |
-| timesync     | Syncs the time of the segments with NTP, syncs overseer with NTP |
-| exit         | Exits the script                                                 |
+| Command        | Action                                                           |
+| -------------- | ---------------------------------------------------------------- |
+| start          | Starts the countdown of 3 seconds                                |
+| stop           | Halts the experiment immediately                                 |
+| reset          | Resets all segments to pre-experiment stage                      |
+| upload         | Uploads the experiment parameters to all segments individually   |
+| timesync       | Syncs the time of the segments with NTP, syncs overseer with NTP |
+| exit           | Exits the script                                                 |
 | assign -s 42   | Assigns any currently available segments to position 42          |
 | upload -s 42   | Uploads the experiment parameters to segment 42                  |
 | timesync -s 42 | Syncs the time of segment 42 with NTP                            |
@@ -47,14 +48,14 @@
 * Power up the segment - upon initialization the indicator light should light up blue
 * ESP32 will connect to the local MQTT broker - upon connection the indicator light should blink blue
   * If the segment is unable to connect to the MQTT broker, the indicator light will become solid red indicating a fault
-* Once connected to the MQTT broker, the segment will automatically subscribe to the topic `shiveworks/overseer`
+* Once connected to the MQTT broker, the segment will automatically subscribe to the topic `ShiveWorks/overseer/command`
   * This is an equivalent to a command line that all segments will listen to
 * For newly flashed segments, the sequence number will have to be assigned
   * Press the button on the segment to initiate the sequence number assignment - the indicator light should start blink purple
-  * By typing `assign -s 42` into the python script command line and sending that to the masterCommand topic, the segment will be assigned to position 42
+  * By typing `assign -s 42` into the python script command line and sending that to the overseer topic, the segment will be assigned to position 42
   * Indicator light will turn purple solid to indicate the sequence number has been received and saved
 * Each segment will then subscribe to the topic `shiveworks/segment/ID` where ID represents a unique ID for each segment is the sequence number of the segment
-  * This is an equivalent to a command line that only the segment will listen to
+  * This is topic with transmit, receive, and status channels for a specific segment
   * Used for sending experiment parameters to the segment, and gathering scientific data 
 
  

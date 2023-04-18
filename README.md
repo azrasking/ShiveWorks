@@ -1,6 +1,9 @@
 # ShiveWorks 
 **ShiveWorks - a dynamic material research project at WPI**
 
+* The purpose of this project is to create a device that demonstrates several concepts from the theory of dynamic materials.
+
+
 ## Contributors
 * Project Lead: @[William Sanguinet](https://github.com/williamsanguinet) | wcsanguinet@wpi.edu
 * Engineer Lead: @[Jakub Jandus](https://github.com/BambusGS) | jjandus@wpi.edu

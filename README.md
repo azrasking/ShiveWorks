@@ -54,6 +54,7 @@
 * Enter correct local WiFi credential and MQTT broker IP address in credentials.h (rename and fill out sample_credentials.h)
 * Compile and upload main.c to the ESP32
   * Might require installation of [ESP32 drivers](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)
+  * If we want to see diagnostic information, we can use the Serial Monitor in the Arduino IDE with a baud rate of 115200
 <!-- * Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
   * Compile and upload main.c to the ESP32
   * Run `python3 OTA.py` to upload the sketch to the ESP32 over WiFi -->
@@ -83,18 +84,19 @@
   * Used for sending experiment parameters to the segment, and gathering scientific data 
 
  
-| Segment Status                    | LED Indicator Light |
-| --------------------------------- | ------------------- |
-| Initializing                      | Blue Solid          |
-| Connected to Wifi and MQTT Broker | Blue Blinking       |
-| Segment Position Pairing          | Purple Blinking     |
-| Segment Position Paired           | Purple Solid        |
-| Downloading Experiment            | Yellow Blinking     |
-| Ready for Experiment              | Green Blinking      |
-| Experiment Running                | Green Solid         |
-| E-Stop                            | Red Blinking        |
-| Fault                             | Dark Red Solid      |
-|                                   |                     |
+| Segment Status           | LED Indicator Light |
+| ------------------------ | ------------------- |
+| Initializing Hardware    | White Solid         |
+| Connected to Wifi        | Blue Solid          |
+| Connected to MQTT Broker | Blue Blinking       |
+| Segment Position Pairing | Purple Blinking     |
+| Segment Position Paired  | Purple Solid        |
+| Downloading Experiment   | Yellow Blinking     |
+| Ready for Experiment     | Green Blinking      |
+| Experiment Running       | Green Solid         |
+| E-Stop                   | Red Blinking        |
+| Fault                    | Dark Red Solid      |
+|                          |                     |
 
 | Button Press      | Action                               |
 | ----------------- | ------------------------------------ |

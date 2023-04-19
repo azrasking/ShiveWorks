@@ -7,27 +7,45 @@ PubSubClient client(wifiClient);
 const uint32_t KEEP_ALIVE_INTERVAL = 20; // seconds
 
 uint32_t lastWiFiConnectionAttempt = 0;
-uint32_t wifiConnectionRetryInterval = 5000; // milliseconds
-bool connecting = false;
+uint32_t wifiConnectionRetryInterval = 7000; // milliseconds, do not set to less than 5000
+bool isConnecting = false;
+uint8_t wifiConnectionAttempts = 0;
+
+uint8_t getConnectionAttemptsWiFi()
+{
+    return wifiConnectionAttempts;
+}
+
+/*
+ * Connect to WiFi network
+ * @param forceReconnect: if true, force a reconnect
+ * @return true if connected, false otherwise
+ */
 
 bool wifi_reconnect(bool forceReconnect)
 {
+    // if we're not connected, try to connect
     if (WiFi.status() != WL_CONNECTED)
     {
+        // try to connect, and if we failed try again after a delay
         if (millis() - lastWiFiConnectionAttempt > wifiConnectionRetryInterval || forceReconnect)
         {
-            Serial.print("\nMy MAC address is ");
+            Serial.print("\nMy MAC address is: ");
             Serial.print(WiFi.macAddress());
 
-            Serial.print("\nConnecting to ");
+            Serial.print("\nConnecting to: ");
             Serial.print(ssid);
 
+            // attempt to connect to WiFi network
             lastWiFiConnectionAttempt = millis();
+            WiFi.mode(WIFI_STA); // set the ESP32 to be a WiFi client
             WiFi.begin(ssid, password);
 
-            connecting = true;
+            isConnecting = true;
+            wifiConnectionAttempts++;
         }
 
+        // if we're still not connected, let us know we're still trying by printing a dot
         static uint32_t lastDot = 0;
         if (millis() - lastDot > 500)
         {
@@ -36,63 +54,72 @@ bool wifi_reconnect(bool forceReconnect)
         }
     }
 
-    // use separate if for when the above connects
+    // if we're connected, let us know
     if (WiFi.status() == WL_CONNECTED)
     {
-        // if we've trying to connect, let us know we succeeded
-        if (connecting)
+        // if we've been trying to connect, let us know we succeeded
+        if (isConnecting)
         {
             Serial.println("Connected with IP address: ");
             Serial.println(WiFi.localIP());
 
-            connecting = false;
+            isConnecting = false;
         }
-
         return true;
     }
-
     return false;
 }
 
-uint32_t lastCxnAttempt = 0;
-uint32_t cxnRetryInterval = 1500;
+/*
+ * Connect to MQTT broker
+ * @param timeout: if timeout is not zero, keep trying to reconnect for the timeout period
+ * @return true if connected, false otherwise
+ */
+
+uint32_t lastConnectionAttempt = 0;
+uint32_t connectionRetryInterval = 2500; // milliseconds, do not set to less than 2000
+uint8_t MQTTConnectionAttempts = 0;
+
+uint8_t getConnectionAttemptsMQTT()
+{
+    return MQTTConnectionAttempts;
+}
 
 bool mqtt_reconnect(uint32_t timeout)
 {
-    bool wifi_cxn = wifi_reconnect();
+    // bool wifi_cxn = wifi_reconnect();
 
-    if (!wifi_cxn)
-    {
-        if (timeout) // if timeout is not zero, keep trying to reconnect for the timeout period
-        {
-            uint32_t startTime = millis();
-            while (millis() - startTime < timeout)
-            {
-                wifi_cxn = wifi_reconnect();
-                if (wifi_cxn)
-                    break;
-            }
-        }
-    }
+    // if (!wifi_cxn)
+    // {
+    //     if (timeout) // if timeout is not zero, keep trying to reconnect for the timeout period
+    //     {
+    //         uint32_t startTime = millis();
+    //         while (millis() - startTime < timeout)
+    //         {
+    //             wifi_cxn = wifi_reconnect();
+    //             if (wifi_cxn)
+    //                 break;
+    //         }
+    //     }
+    // }
 
-    if (!wifi_cxn)
-        return false;
+    // if (!wifi_cxn)
+    //     return false;
 
-    // try to reconnect once
+    // try to reconnect once to the MQTT broker //78aaf0d82240 //40:22:D8:F0:AA:78
     if (!client.connected())
     {
-        if (millis() - lastCxnAttempt > cxnRetryInterval)
+        if (millis() - lastConnectionAttempt > connectionRetryInterval)
         {
-            lastCxnAttempt = millis();
+            lastConnectionAttempt = millis();
 
             client.setServer(mqtt_server, mqtt_port);
             client.setKeepAlive(KEEP_ALIVE_INTERVAL);
 
-            Serial.println("MQTT cxn...");
+            Serial.println("MQTT connecting...");
 
-            // Create a random client ID
-            String clientId = "ESP32Client-";
-            clientId += String(WiFi.macAddress());
+            // Create a client ID unique to this very chip the code is uploaded to
+            String clientId = String(ESP.getEfuseMac(), HEX);
 
             Serial.print("Connecting as: ");
             Serial.println(clientId);
@@ -100,6 +127,7 @@ bool mqtt_reconnect(uint32_t timeout)
             // Attempt to connect
             if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PASSWORD))
             {
+                // client.setCallback(callback); // set the callback function that will handle incoming messages               )
                 Serial.println("Connected to broker");
                 return true;
             }
@@ -108,8 +136,9 @@ bool mqtt_reconnect(uint32_t timeout)
             {
                 Serial.print("Failed, Error = ");
                 Serial.print(client.state());
-                Serial.println("; will try again");
+                Serial.println("; will retry");
 
+                MQTTConnectionAttempts++;
                 return false;
             }
         }
@@ -120,16 +149,10 @@ bool mqtt_reconnect(uint32_t timeout)
     return true;
 }
 
-void setup_mqtt(void)
-{
-    wifi_reconnect(true);
-    mqtt_reconnect(5000);
-}
-
-void callback(char* topic, byte *payload, unsigned int length) 
+void callback(char *topic, byte *payload, unsigned int length)
 {
     Serial.println(topic);
-    Serial.print(':');  
+    Serial.print("||");
     Serial.write(payload, length);
     Serial.println();
 }

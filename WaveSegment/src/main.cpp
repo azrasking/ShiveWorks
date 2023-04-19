@@ -156,18 +156,30 @@ void initializeHW()
   hasInitializedHW = true;
   delay(250);
 }
+
 bool hasInitializedMQTT = false;
-void initializeMQTT(){
-
-hasInitializedMQTT = true;
-}
-
 void setup()
 {
-  Serial.begin(115200);
-  initializeHW();
-  updateLED(currSegmentStatus); // update the LED state
-  initializeMQTT();
+  Serial.begin(115200); // initialize the serial monitor
+  initializeHW();       // initialize the LEDs, button, and servo
+
+  // try to connect to the wifi 5 times
+  while (!wifi_reconnect(false) && getConnectionAttemptsWiFi() < 5)
+  {
+    updateLED(currSegmentStatus); // update the LED state
+  }
+  WiFi.status() == WL_CONNECTED ? currSegmentStatus = Initializing : currSegmentStatus = Fault;
+  delay(250);
+
+  // try to connect to the MQTT broker 5 times, code will not proceed if something does not connect
+  while (!mqtt_reconnect(false) && getConnectionAttemptsMQTT() < 5)
+  {
+    updateLED(currSegmentStatus); // update the LED state
+  }
+  hasInitializedMQTT = true;
+  client.connected() == true ? currSegmentStatus = Connected : currSegmentStatus = Fault;
+  delay(250);
+  
 }
 
 //------------------------------------//---state machine
@@ -175,10 +187,6 @@ void setup()
 bool checkInitialized()
 {
   return hasInitializedHW && hasInitializedMQTT;
-}
-
-void beginConnection()
-{
 }
 
 void beginConnected()
@@ -195,15 +203,7 @@ void loop()
   switch (currSegmentStatus)
   {
   case Initializing:
-    if (checkInitialized())
-    {
-      currSegmentStatus = Connected;
-      void beginConnected();
-    }
-    else
-    {
-      beginConnection();
-    }
+    // do nothing, but display blue
     break;
   case Connected:
     // do stuff

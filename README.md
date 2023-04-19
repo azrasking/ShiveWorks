@@ -53,6 +53,7 @@
 * All source files are in WaveSegment folder, in the 'src' directory
 * Enter correct local WiFi credential and MQTT broker IP address in credentials.h (rename and fill out sample_credentials.h)
 * Compile and upload main.c to the ESP32
+  * Might require installation of [ESP32 drivers](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)
 <!-- * Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
   * Compile and upload main.c to the ESP32
   * Run `python3 OTA.py` to upload the sketch to the ESP32 over WiFi -->
@@ -84,21 +85,22 @@
  
 | Segment Status                    | LED Indicator Light |
 | --------------------------------- | ------------------- |
-| Initializing                      | Blue Blinking       |
-| Connected to Wifi and MQTT Broker | Blue Solid          |
+| Initializing                      | Blue Solid          |
+| Connected to Wifi and MQTT Broker | Blue Blinking       |
 | Segment Position Pairing          | Purple Blinking     |
 | Segment Position Paired           | Purple Solid        |
 | Downloading Experiment            | Yellow Blinking     |
 | Ready for Experiment              | Green Blinking      |
 | Experiment Running                | Green Solid         |
 | E-Stop                            | Red Blinking        |
-| Fault                             | Red Solid           |
+| Fault                             | Dark Red Solid      |
 |                                   |                     |
 
 | Button Press      | Action                               |
 | ----------------- | ------------------------------------ |
-| Button Press      | Initiate Segment Position Assignment |
-| Button Press + 5s | Reset Segment                        |
+| Button Tap        | Initiate Segment Position Assignment |
+| Button Double Tap | Segment Self-Test                    |
+| Button 2s+ hold   | Restart Segment                      |
 |                   |                                      |
 
   

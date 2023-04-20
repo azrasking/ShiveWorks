@@ -1,10 +1,47 @@
 #include <mqtt.h>
 #include <credentials.h>
 
+#define DEBUG
+
 WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
-const uint32_t KEEP_ALIVE_INTERVAL = 20; // seconds
+//------------------------------------//---messages
+const int maxMessageLength = 32768;
+const char *overseerCommandPath = "ShiveWorks/overseer/command";
+const char *overseerReturnPath = "ShiveWorks/overseer/return";
+// autoassigned is the unique MAC address of the ESP32 backwards in HEX
+// this ID gets called once more when subscribing to the MQTT broker
+const char *segmentPathMain = "ShiveWorks/segment/";
+
+bool sendOverseerMessage(const char *message)
+{
+    return client.publish(overseerReturnPath, message);
+}
+bool sendSegmentStatus(const char *message)
+{
+    String topic = "ShiveWorks/segment/" + String(ESP.getEfuseMac(), HEX) + "/status";
+    return client.publish(topic.c_str(), message);
+}
+bool sendSegmentData(const char *message)
+{
+    String topic = "ShiveWorks/segment/" + String(ESP.getEfuseMac(), HEX) + "/return";
+    return client.publish(topic.c_str(), message);
+}
+
+String getSegmentCommandPath()
+{
+    return segmentPathMain + String(ESP.getEfuseMac(), HEX) + "/command";
+}
+
+String getSegmentDataPath()
+{
+    return segmentPathMain + String(ESP.getEfuseMac(), HEX) + "/data";
+}
+
+//------------------------------------//---wifi
+
+const uint32_t KEEP_ALIVE_INTERVAL = 30; // seconds to keep the connection alive, do not set to less than 15
 
 uint32_t lastWiFiConnectionAttempt = 0;
 uint32_t wifiConnectionRetryInterval = 7000; // milliseconds, do not set to less than 5000
@@ -30,11 +67,13 @@ bool wifi_reconnect(bool forceReconnect)
         // try to connect, and if we failed try again after a delay
         if (millis() - lastWiFiConnectionAttempt > wifiConnectionRetryInterval || forceReconnect)
         {
+#ifdef DEBUG
             Serial.print("\nMy MAC address is: ");
             Serial.print(WiFi.macAddress());
 
             Serial.print("\nConnecting to: ");
             Serial.print(ssid);
+#endif
 
             // attempt to connect to WiFi network
             lastWiFiConnectionAttempt = millis();
@@ -50,7 +89,9 @@ bool wifi_reconnect(bool forceReconnect)
         if (millis() - lastDot > 500)
         {
             lastDot = millis();
+#ifdef DEBUG
             Serial.print('.');
+#endif
         }
     }
 
@@ -60,8 +101,10 @@ bool wifi_reconnect(bool forceReconnect)
         // if we've been trying to connect, let us know we succeeded
         if (isConnecting)
         {
-            Serial.println("Connected with IP address: ");
+#ifdef DEBUG
+            Serial.println("\nConnected with IP address: ");
             Serial.println(WiFi.localIP());
+#endif
 
             isConnecting = false;
         }
@@ -106,7 +149,7 @@ bool mqtt_reconnect(uint32_t timeout)
     // if (!wifi_cxn)
     //     return false;
 
-    // try to reconnect once to the MQTT broker //78aaf0d82240 //40:22:D8:F0:AA:78
+    // try to reconnect once to the MQTT broker
     if (!client.connected())
     {
         if (millis() - lastConnectionAttempt > connectionRetryInterval)
@@ -115,28 +158,36 @@ bool mqtt_reconnect(uint32_t timeout)
 
             client.setServer(mqtt_server, mqtt_port);
             client.setKeepAlive(KEEP_ALIVE_INTERVAL);
-
+            client.setBufferSize(maxMessageLength);
+#ifdef DEBUG
             Serial.println("MQTT connecting...");
+#endif
 
             // Create a client ID unique to this very chip the code is uploaded to
             String clientId = String(ESP.getEfuseMac(), HEX);
 
+#ifdef DEBUG
             Serial.print("Connecting as: ");
             Serial.println(clientId);
+#endif
 
             // Attempt to connect
             if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PASSWORD))
             {
-                // client.setCallback(callback); // set the callback function that will handle incoming messages               )
+                client.setCallback(callbackMSG); // set the callback function that will handle incoming messages               )
+#ifdef DEBUG
                 Serial.println("Connected to broker");
+#endif
                 return true;
             }
 
             else
             {
+#ifdef DEBUG
                 Serial.print("Failed, Error = ");
                 Serial.print(client.state());
                 Serial.println("; will retry");
+#endif
 
                 MQTTConnectionAttempts++;
                 return false;
@@ -149,10 +200,45 @@ bool mqtt_reconnect(uint32_t timeout)
     return true;
 }
 
-void callback(char *topic, byte *payload, unsigned int length)
+String receivedTopic = "";                         // shared buffer for received topic
+byte *receivedBuffer = new byte[maxMessageLength]; //  shared buffer pointer for received messages
+unsigned int receivedLength = 0;                   // length of received message
+bool messageReceived = false;                      // flag for received message
+
+void callbackMSG(char *topic, byte *payload, unsigned int length)
 {
-    Serial.println(topic);
-    Serial.print("||");
-    Serial.write(payload, length);
+#ifdef DEBUG
+    Serial.print(topic);
+    Serial.print(" | ");
+    if (length <= 64)
+    {
+        Serial.write(payload, length);
+    }
+    else
+    {
+        Serial.write(payload, 64);
+        Serial.print("...");
+    }
+    Serial.print("  | length: ");
+    Serial.print(length);
     Serial.println();
+#endif
+
+    // send a warning status if the message is over maxMessageLength
+    if (length > maxMessageLength - 1)
+    {
+        sendSegmentStatus("Warning: message is over maxMessageLength set in mqtt.cpp");
+    }
+    else
+    {
+        messageReceived = true;        // set the flag that a message was received
+        receivedTopic = String(topic); // using this the type of the payload can be handled differently
+        receivedLength = length;
+        // command payload will always be a string, while data payload will be a byte array
+        for (int i = 0; i < length; i++)
+        {
+            receivedBuffer[i] = (byte)payload[i];
+        }
+        receivedBuffer[length] = '\0'; // null terminate the string
+    }
 }

@@ -19,6 +19,7 @@
 * Windows
   * Go to the mosquitto installation directory (`cd C:\Program Files\mosquitto`), open terminal and run `mosquitto -v --config-file {{path/to/file.conf}` to start the broker
   * Make sure the network is set to "Private" in the Windows Firewall settings
+  * An [MQTT Explorer](https://mqtt-explorer.com/) is recommended to monitor the MQTT messages
 
 ## Overseer.py
   * Download and install [paho](https://pypi.org/project/paho-mqtt/)
@@ -55,6 +56,7 @@
 * Compile and upload main.c to the ESP32
   * Might require installation of [ESP32 drivers](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)
   * If we want to see diagnostic information, we can use the Serial Monitor in the Arduino IDE with a baud rate of 115200
+  * 
 <!-- * Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
   * Compile and upload main.c to the ESP32
   * Run `python3 OTA.py` to upload the sketch to the ESP32 over WiFi -->
@@ -79,8 +81,8 @@
   * Press the button on the segment to initiate the sequence number assignment - the indicator light should start blink purple
   * By typing `assign -s 42` into the python script command line and sending that to the overseer topic, the segment will be assigned to position 42
   * Indicator light will turn purple solid to indicate the sequence number has been received and saved
-* Each segment will then subscribe to the topic `shiveworks/segment/ID` where ID represents a unique ID for each segment is the sequence number of the segment
-  * This is topic with transmit, receive, and status channels for a specific segment
+* Each segment will then subscribe to the topic `ShiveWorks/segment/ID` where ID represents a unique ID for each segment is the sequence number of the segment
+  * This is topic with transmit (`/return`), command (`/command`), obtain actuation data (`/data`) and status (`/status`) channels for to the specific segment
   * Used for sending experiment parameters to the segment, and gathering scientific data 
 
  

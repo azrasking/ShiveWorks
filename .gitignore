@@ -1,4 +1,4 @@
 credentials.h
-.pio
+.pio/build
 .vscode
 platformio.ini

@@ -7,8 +7,7 @@ import csv
 import time
 
 # ---TODO--- #
-# 1. get the segment status stored in a list
-# 2. get the movement function up and running
+# 1. get the movement function up and running
 
 
 # ---------------------- MQTT Setup----------------------#
@@ -44,7 +43,8 @@ def main():  # main method where the MQTT client is connected
 
 # --- MQTT Received Message Callback functions ---#
 latestOverseerReturnMessage = ""  # global storage of the latest message received
-statusList = []  # list of the status of all segments ordered by segment number
+# list of the status of all segments ordered by segment number
+statusList = [None]*segment_count
 
 
 def on_message(client, userdata, message):
@@ -83,8 +83,8 @@ def getSegmentID(segment_no):
 def getSegmentNumber(segmentID):
     for i in range(len(segments_ID)):
         if segments_ID[i] == segmentID:
-            return i + 1
-    return -1
+            return int(i + 1)
+    return int(-1)
 
 
 def addSegmentID(segment_no):  # add a segment ID to the list and save it to a .csv file
@@ -99,11 +99,14 @@ def addSegmentID(segment_no):  # add a segment ID to the list and save it to a .
             ID_str = latestOverseerReturnMessage.split("::")[1]
             segments_ID[int(segment_no) - 1] = ID_str
             saveSegmentsID()
-            # acknowledge the pairing
-            client.publish(overseerReturnPath, "ack", 1)
+
             # subscribe to the status and data return of the new segment
             client.subscribe(segmentPathFn(segment_no, "status"), 1)
             client.subscribe(segmentPathFn(segment_no, "return"), 1)
+
+            # acknowledge to the segment that pairing was successful
+            client.publish(segmentPathFn(segment_no, "command"), "ack", 1)
+
             # print segment number and id that has been added to the list
             print("Segment #{} has been added to the list with ID: {}".format(
                 segment_no, ID_str))
@@ -151,7 +154,7 @@ def clearSegmentsID():  # clear the segments ID list
 
 # ---------------------- Individual Segment Functions ----------------------#
 def segmentPathFn(segment_number, whatToDo):
-    if whatToDo == "command" or whatToDo == "return" or whatToDo == "status":
+    if whatToDo == "command" or whatToDo == "return" or whatToDo == "status" or whatToDo == "data":
         return segmentPath + "/" + getSegmentID(int(segment_number)) + "/" + whatToDo
     # there are three topics for each segment: command, return, and status
 
@@ -166,14 +169,14 @@ def timesync_segment(segment_no):  # timesync a specific segment
 
 
 def upload_segment(segment_no, data):  # upload data from a specific segment
-    client.publish(segmentPathFn(segment_no, "command"), data, 1)
+    client.publish(segmentPathFn(segment_no, "data"), data, 1)
 
 
 def get_segment_status(segment_no):  # get the status of a specific segment
     client.publish(segmentPathFn(segment_no, "command"), "status_report", 1)
     time.sleep(0.25)  # wait for the status report to be published
     try:
-        return statusList[int(segment_no - 1)]
+        return statusList[int(segment_no) - 1]
     except IndexError:
         return ("Segment does not have a reported status yet")
 

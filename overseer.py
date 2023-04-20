@@ -7,7 +7,8 @@ import csv
 import time
 
 # ---TODO--- #
-# 1. get the movement function up and running
+# 1. servo angle limiter
+# 2. upload working
 
 
 # ---------------------- MQTT Setup----------------------#
@@ -114,6 +115,24 @@ def addSegmentID(segment_no):  # add a segment ID to the list and save it to a .
         print("No segment available for assignment")
 
 
+# remove a segment ID from the list and save it to a .csv file
+def removeSegmentID(segment_no):
+    # check if the segment number is valid
+    if int(segment_no) > segment_count or int(segment_no) < 1:
+        print("Invalid segment number")
+        return
+    else:
+        segments_ID[int(segment_no) - 1] = "Null"
+        saveSegmentsID()
+
+        # unsubscribe from the status and data return of the segment
+        client.unsubscribe(segmentPathFn(segment_no, "status"))
+        client.unsubscribe(segmentPathFn(segment_no, "return"))
+
+        # print segment number and id that has been removed from the list
+        print("Segment #{} has been removed from the list".format(segment_no))
+
+
 def loadSegmentsID():   # load the segments ID from a .csv file
     segments_ID.clear()  # clear the list before loading
     with open(filePath, 'r') as file:
@@ -136,9 +155,8 @@ def saveSegmentsID():   # save the segments ID to a .csv file
 
 
 def clearSegmentID(segment_no):  # clear a segment ID from the list
-    client.unsubscribe(segmentPathFn(segment_no, "status"))
-    client.unsubscribe(segmentPathFn(segment_no, "return"))
-    addSegmentID(segment_no, "Null")
+    client.publish(segmentPathFn(segment_no, "command"), "restart", 1)
+    removeSegmentID(segment_no)
 
 
 def clearSegmentsID():  # clear the segments ID list
@@ -170,6 +188,11 @@ def timesync_segment(segment_no):  # timesync a specific segment
 
 def upload_segment(segment_no, data):  # upload data from a specific segment
     client.publish(segmentPathFn(segment_no, "data"), data, 1)
+
+
+def move_segment(segment_no, position):  # move a specific segment to a position
+    client.publish(segmentPathFn(segment_no, "command"), "move::{}".format(
+        position), 1)
 
 
 def get_segment_status(segment_no):  # get the status of a specific segment
@@ -215,13 +238,16 @@ while True:
             print("Uploading data to segment # {}".format(segment_no))
             upload_segment(segment_no, "TEST_DATA_STRING")
 
-        # case ["move"]:
-        #     print("Moving all segments")
-        #     client.publish(overseerCommandPath, "move::", 1)
+        case ["move", *args] if '-s' and '-p' in args:  # move a specific segment
+            segment_no = args[args.index('-s') + 1]
+            position = args[args.index('-p') + 1]
+            move_segment(segment_no, position)
+            print("Moving the segment # {} to {}".format(segment_no, position))
 
-        # case ["move", *args] if '-s' in args:  # move a specific segment
-        #     segment_no = args[args.index('-s') + 1]
-        #     print("Moving the segment # {}".format(segment_no))
+        case ["move", *args] if '-p' in args:
+            position = args[args.index('-p') + 1]
+            client.publish(overseerCommandPath, "move::{}".format(position), 1)
+            print("Moving all segments")
 
         case ["timesync"]:
             print("Syncing time in all segments")

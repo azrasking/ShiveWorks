@@ -34,6 +34,9 @@ OneButton button(pin_button, false);
 CRGB leds[2]; // an array of 2 LEDs
 
 Servo servo;
+// limit the servo to 45 to 135 degrees
+const int servoMin = 45;
+const int servoMax = 135;
 
 //------------------------------------//---MISC
 
@@ -72,21 +75,21 @@ void buttonDoubleClick()
   delay(250);
 
   // sweep servo from 45 to 135
-  for (int i = 45; i < 135; i++)
+  for (int i = servoMin; i < servoMax; i++)
   {
     servo.write(i);
     delay(50);
   }
 
   // sweep servo from 135 to 90
-  for (int i = 135; i > 90; i--)
+  for (int i = servoMax; i > (servoMax + servoMin) / 2; i--)
   {
     servo.write(i);
     delay(50);
   }
 
-  // return to 90 position
-  servo.write(90);
+  // return to the middle position
+  servo.write((servoMax + servoMin) / 2);
   delay(250);
 
   Serial.println("Self-test complete");
@@ -232,8 +235,8 @@ void initializeHW()
   delay(250);
 
   // servo initialization
-  servo.attach(pin_servo);
-  servo.write(90); // set the servo to the middle position
+  servo.attach(pin_servo); // attach the servo to the pin
+  servo.write((servoMax + servoMin) / 2);      // set the servo to the middle position
   delay(250);
 
   hasInitializedHW = true;
@@ -299,8 +302,8 @@ bool checkMQTTAcknowledged()
 void loop()
 {
   button.tick();                // update the button state
-  updateLED(currSegmentStatus); // update the LED state
   client.loop();                // update the ESP32 MQTT client data and communication
+  updateLED(currSegmentStatus); // update the LED state
 
   // check if a message has been received and handle accordingly
   if (messageReceived)
@@ -321,9 +324,33 @@ void loop()
       {
         sendSegmentStatus(getSegmentStatusString().c_str());
       }
-      if (commandStr == "ack")
+      if (commandStr == "ack") // overseer's acknowledgement of a message received
       {
         mqttAck = true;
+      }
+
+      if (commandStr == "restart") // restart the ESP32
+      {
+        ESP.restart();
+      }
+
+      if (commandStr == "reset") // clear the buffer
+      {
+        for (int i = 0; i < receivedLength; i++)
+        {
+          receivedBuffer[i] = 0;
+        }
+      }
+
+      if (commandStr.startsWith("move")) // a manual move command {{move::angle}}
+      {
+        // find the second colon in the command
+        int colonIndex = commandStr.lastIndexOf(":");
+        // get the angle from the command
+        int angle = commandStr.substring(colonIndex + 1).toInt();
+        // move the servo to the angle
+        servo.write(angle);
+        delay(250);
       }
     }
 

@@ -36,14 +36,14 @@
 | timesync            | Syncs the time of the segments with NTP, syncs overseer with NTP |
 | clear_pairing       | Clears the pairing of segments                                   |
 | debug               | Writes script debug info                                         |
-| move 70             | Move all segments to position 70                                 |
+| move -p 70          | Move all segments to position 70                                 |
 | exit                | Exits the script                                                 |
 | assign -s 42        | Assigns any currently available segments to position 42          |
 | upload -s 42        | Uploads the experiment parameters to segment 42                  |
 | timesync -s 42      | Syncs the time of segment 42 with NTP                            |
 | clear_pairing -s 42 | Clears the pairing of segment 42                                 |
 | debug -s 42         | Writes script debug info for segment number 42                   |
-| move 70 -s 42       | Move segment 42 to position 70                                   |
+| move -s 42 -p 70    | Move segment 42 to position 70                                   |
 
 <!-- implement a segment servo offset function -->
 

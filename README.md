@@ -1,8 +1,7 @@
 # ShiveWorks 
 **ShiveWorks - a dynamic material research project at WPI**
 
-* The purpose of this project is to create a device that demonstrates several concepts from the theory of dynamic materials.
-* It has been in researched for a long time
+* The purpose of this project is to create a device that demonstrates several concepts from the theory of dynamic materials. ShiveWorks, the whole device, consists of a series of segments that can be actuated individually or in groups to create a variety of static or dynamic shapes. The segments are connected to a central controller script that can be used to control the segments individually or in groups. The controller can also be used to upload experiment parameters to the segments and to collect data from the segments during experiments. ShiveWorks is intended to be used as a research tool to study the behavior and the potential applications of dynamic materials.
 
 ## Contributors
 * Project Lead: @[William Sanguinet](https://github.com/williamsanguinet) | wcsanguinet@wpi.edu
@@ -36,14 +35,15 @@
 | timesync            | Syncs the time of the segments with NTP, syncs overseer with NTP |
 | clear_pairing       | Clears the pairing of segments                                   |
 | debug               | Writes script debug info                                         |
-| move -p 70          | Move all segments to position 70                                 |
+| move -p 500         | Move all segments to position the middle (500)                   |
 | exit                | Exits the script                                                 |
 | assign -s 42        | Assigns any currently available segments to position 42          |
+| restart -s 42       | Restarts segment 42, same as holding down the physical button    |
 | upload -s 42        | Uploads the experiment parameters to segment 42                  |
 | timesync -s 42      | Syncs the time of segment 42 with NTP                            |
 | clear_pairing -s 42 | Clears the pairing of segment 42                                 |
 | debug -s 42         | Writes script debug info for segment number 42                   |
-| move -s 42 -p 70    | Move segment 42 to position 70                                   |
+| move -s 42 -p 1000  | Move segment 42 to position max position (1000)                  |
 
 <!-- implement a segment servo offset function -->
 
@@ -77,13 +77,17 @@
   * If the segment is unable to connect to the MQTT broker, the indicator light will become solid red indicating a fault
 * Once connected to the MQTT broker, the segment will automatically subscribe to the topic `ShiveWorks/overseer/command`
   * This is an equivalent to a command line that all segments will listen to
+  * Servo is limited in main.cpp to min and max angle in degrees
+  * The **input range for the segment is then 0 to 1000 integer number**
+    * Ex.: if limited to 45 to 135 degrees of movement, a command of '0' will move the servo to 45 degrees, and a command of '1000' will move the servo to 135 degrees
 * For newly flashed segments, the sequence number will have to be assigned
   * Press the button on the segment to initiate the sequence number assignment - the indicator light should start blink purple
   * By typing `assign -s 42` into the python script command line and sending that to the overseer topic, the segment will be assigned to position 42
   * Indicator light will turn purple solid to indicate the sequence number has been received and saved
 * Each segment will then subscribe to the topic `ShiveWorks/segment/ID` where ID represents a unique ID for each segment is the sequence number of the segment
   * This is topic with transmit (`/return`), command (`/command`), obtain actuation data (`/data`) and status (`/status`) channels for to the specific segment
-  * Used for sending experiment parameters to the segment, and gathering scientific data 
+  * Longest command shall be 128 bytes long
+  * Experiment data is stored separately from the message, maximum size is 32kB
 
  
 | Segment Status           | LED Indicator Light |
@@ -112,6 +116,7 @@
 ## Running an Experiment
 * Run the attached python scrypt and enter the desired experiment parameters
   * The script will automatically connect to the MQTT broker and send the experiment parameters to the ESP32
+  * Maximum payload size is 32kBytes
 * Segment should start to light up and the indicator light should blink green indicating it is ready
 * Once the countdown sequence is initiated, the indicator light will become solid green for the duration of the experiment
 * In case of an E-stop or other fault, the indicator light will blink red

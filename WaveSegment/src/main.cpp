@@ -34,19 +34,25 @@ OneButton button(pin_button, false);
 CRGB leds[2]; // an array of 2 LEDs
 
 Servo servo;
-// limit the servo to 45 to 135 degrees
+// servo is in degrees, where 0° is 500uS and 180° is 2500uS
+// limit the servo to 45 to 135 degrees physically so as not to damage the segment
 const int servoMin = 45;
 const int servoMax = 135;
+void moveServo(int angleMQTT)
+{
+  int angle = map(angleMQTT, 0, 1000, servoMin, servoMax);
+  servo.write(angle);
+}
 
-//------------------------------------//---MISC
+//------------------------------------//---MISC function stubs
 
-void beginPairing();
+void beginPairing(); // do not remove as the function is defined lower in the program, but needs to be called before it is defined
 
 //------------------------------------//---UI
 
 void buttonClick()
 {
-  if (currSegmentStatus != Pairing)
+  if (currSegmentStatus != Pairing && currSegmentStatus != Estop && currSegmentStatus != Fault)
     beginPairing();
   else
     currSegmentStatus = Fault; // change to Connected possibly
@@ -74,22 +80,22 @@ void buttonDoubleClick()
   FastLED.show();
   delay(250);
 
-  // sweep servo from 45 to 135
-  for (int i = servoMin; i < servoMax; i++)
+  // sweep servo range up
+  for (int i = 0; i < 1000; i++)
   {
-    servo.write(i);
-    delay(50);
+    moveServo(i);
+    delay(2);
   }
 
-  // sweep servo from 135 to 90
-  for (int i = servoMax; i > (servoMax + servoMin) / 2; i--)
+  // sweep servo from max to middle
+  for (int i = 1000; i > 500; i--)
   {
-    servo.write(i);
-    delay(50);
+    moveServo(i);
+    delay(2);
   }
 
   // return to the middle position
-  servo.write((servoMax + servoMin) / 2);
+  moveServo(500);
   delay(250);
 
   Serial.println("Self-test complete");
@@ -236,7 +242,9 @@ void initializeHW()
 
   // servo initialization
   servo.attach(pin_servo); // attach the servo to the pin
-  servo.write((servoMax + servoMin) / 2);      // set the servo to the middle position
+  // servo is in degrees, where 0° us 500uS and 180° is 2500uS
+  // limit the servo to 45 to 135 degrees physically
+  moveServo(500); // set the servo to the middle position
   delay(250);
 
   hasInitializedHW = true;
@@ -312,18 +320,29 @@ void loop()
     // check if the message is a command
     if (receivedTopic == overseerCommandPath)
     {
-      // PROGRAM ALL GENERAL COMMANDS HERE
+      String commandStr = (char *)receivedMessage;
+      if (commandStr == "stop")
+      {
+        currSegmentStatus = Estop; // detaches the servo from the microcontroller
+      }
+      else if (commandStr == "start")
+      {
+      }
+      else if (commandStr == "reset")
+      {
+      }
     }
 
     // command payload will always be a string, while data payload will be a byte array
     else if (receivedTopic == getSegmentCommandPath())
     {
-      String commandStr = (char *)receivedBuffer;
+      String commandStr = (char *)receivedMessage;
       // if the received message payload is "status_report", send the status report
       if (commandStr == "status_report")
       {
         sendSegmentStatus(getSegmentStatusString().c_str());
       }
+
       if (commandStr == "ack") // overseer's acknowledgement of a message received
       {
         mqttAck = true;
@@ -336,9 +355,14 @@ void loop()
 
       if (commandStr == "reset") // clear the buffer
       {
-        for (int i = 0; i < receivedLength; i++)
+        for (int i = 0; i < receivedMessageLength; i++)
         {
-          receivedBuffer[i] = 0;
+          receivedMessage[i] = 0; // clear the buffer byte by byte
+        }
+
+        for (int i = 0; i < receivedDataLength; i++)
+        {
+          receivedData[i] = 0; // clear the buffer byte by byte
         }
       }
 
@@ -349,7 +373,7 @@ void loop()
         // get the angle from the command
         int angle = commandStr.substring(colonIndex + 1).toInt();
         // move the servo to the angle
-        servo.write(angle);
+        moveServo(angle);
         delay(250);
       }
     }
@@ -364,9 +388,17 @@ void loop()
   case Initializing:
     // do nothing, but display a color
     break;
+
   case Connected:
-    // do stuff
+    // if we connect to MQTT and the segment is already paired, it should receive an "ack" message
+    if (checkMQTTAcknowledged())
+    {
+      sendSegmentStatus("Paired");
+      currSegmentStatus = Paired;
+      mqttAck = false;
+    }
     break;
+
   case Pairing:
     if (checkMQTTAcknowledged())
     {
@@ -375,24 +407,33 @@ void loop()
       mqttAck = false;
     }
     break;
+
   case Paired:
-    // do nothing, but display a color
+    // just check messages, but display a color
     break;
+
   case Downloading:
     // do stuff
     break;
+
   case Ready:
     // do stuff
     break;
+
   case Running:
     // do stuff
     break;
-  case Estop:
-    // do stuff
+
+  case Estop:       // emergency stop state: keep connected, but don't physically move
+    servo.detach(); // detaches the servo from the microcontroller
+    // do nothing, but display red - microcontroller can still be reset by holding down the button
     break;
+
   case Fault:
-    // do nothing, but display red
+    servo.detach();
+    // do nothing, but display red - microcontroller can still be reset by holding down the button
     break;
+
   default:
     break;
   }

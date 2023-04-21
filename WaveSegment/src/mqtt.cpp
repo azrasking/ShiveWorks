@@ -7,7 +7,7 @@ WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
 //------------------------------------//---messages
-const int maxMessageLength = 32768;
+const int maxDataLength = 32768, maxMessageLength = 128;
 const char *overseerCommandPath = "ShiveWorks/overseer/command";
 const char *overseerReturnPath = "ShiveWorks/overseer/return";
 // autoassigned is the unique MAC address of the ESP32 backwards in HEX
@@ -115,7 +115,6 @@ bool wifi_reconnect(bool forceReconnect)
 
 /*
  * Connect to MQTT broker
- * @param timeout: if timeout is not zero, keep trying to reconnect for the timeout period
  * @return true if connected, false otherwise
  */
 
@@ -128,27 +127,8 @@ uint8_t getConnectionAttemptsMQTT()
     return MQTTConnectionAttempts;
 }
 
-bool mqtt_reconnect(uint32_t timeout)
+bool mqtt_reconnect()
 {
-    // bool wifi_cxn = wifi_reconnect();
-
-    // if (!wifi_cxn)
-    // {
-    //     if (timeout) // if timeout is not zero, keep trying to reconnect for the timeout period
-    //     {
-    //         uint32_t startTime = millis();
-    //         while (millis() - startTime < timeout)
-    //         {
-    //             wifi_cxn = wifi_reconnect();
-    //             if (wifi_cxn)
-    //                 break;
-    //         }
-    //     }
-    // }
-
-    // if (!wifi_cxn)
-    //     return false;
-
     // try to reconnect once to the MQTT broker
     if (!client.connected())
     {
@@ -158,7 +138,7 @@ bool mqtt_reconnect(uint32_t timeout)
 
             client.setServer(mqtt_server, mqtt_port);
             client.setKeepAlive(KEEP_ALIVE_INTERVAL);
-            client.setBufferSize(maxMessageLength);
+            client.setBufferSize(maxDataLength);
 #ifdef DEBUG
             Serial.println("MQTT connecting...");
 #endif
@@ -200,10 +180,15 @@ bool mqtt_reconnect(uint32_t timeout)
     return true;
 }
 
-String receivedTopic = "";                         // shared buffer for received topic
-byte *receivedBuffer = new byte[maxMessageLength]; //  shared buffer pointer for received messages
-unsigned int receivedLength = 0;                   // length of received message
-bool messageReceived = false;                      // flag for received message
+String receivedTopic = "";    // shared buffer for received topic
+bool messageReceived = false; // flag for received message
+
+byte *receivedMessage = new byte[maxMessageLength + 1]; //  shared buffer pointer for received messages
+// messages are null-terminated strings, so we need to allocate one extra byte for the null character
+unsigned int receivedMessageLength = 0; // length of received message
+
+byte *receivedData = new byte[maxDataLength]; // shared buffer pointer for received data
+unsigned int receivedDataLength = 0;          // length of received data
 
 void callbackMSG(char *topic, byte *payload, unsigned int length)
 {
@@ -219,26 +204,41 @@ void callbackMSG(char *topic, byte *payload, unsigned int length)
         Serial.write(payload, 64);
         Serial.print("...");
     }
-    Serial.print("  | length: ");
+    Serial.print("   | length: ");
     Serial.print(length);
     Serial.println();
 #endif
 
-    // send a warning status if the message is over maxMessageLength
-    if (length > maxMessageLength - 1)
+    // send a warning status if the message is over maxDataLength so as to not overflow the buffer
+    if (length > maxDataLength - 1)
     {
-        sendSegmentStatus("Warning: message is over maxMessageLength set in mqtt.cpp");
+        sendSegmentStatus("Warning: message is over maxDataLength set in mqtt.cpp");
     }
+
     else
     {
-        messageReceived = true;        // set the flag that a message was received
         receivedTopic = String(topic); // using this the type of the payload can be handled differently
-        receivedLength = length;
-        // command payload will always be a string, while data payload will be a byte array
-        for (int i = 0; i < length; i++)
+        // split incoming messages into data and other command messages
+        if (receivedTopic == getSegmentDataPath())
         {
-            receivedBuffer[i] = (byte)payload[i];
+            // data payload will be a byte array
+            for (int i = 0; i < length; i++)
+            {
+                receivedData[i] = (byte)payload[i];
+            }
+            receivedDataLength = length;
         }
-        receivedBuffer[length] = '\0'; // null terminate the string
+
+        else
+        {
+            // command payload will always be a string
+            for (int i = 0; i < length; i++)
+            {
+                receivedMessage[i] = (byte)payload[i];
+            }
+            receivedMessage[length] = '\0'; // null terminate the string
+            receivedMessageLength = length;
+        }
+        messageReceived = true; // set the flag that a message was received
     }
 }

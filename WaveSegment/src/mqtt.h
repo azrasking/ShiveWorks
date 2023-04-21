@@ -7,7 +7,7 @@
 uint8_t getConnectionAttemptsWiFi(void);
 uint8_t getConnectionAttemptsMQTT(void);
 bool wifi_reconnect(bool forceReconnect = false);
-bool mqtt_reconnect(uint32_t timeout = 0);
+bool mqtt_reconnect();
 
 
 extern WiFiClient wifiClient;
@@ -26,6 +26,8 @@ bool sendSegmentData(const char* message);
 
 void callbackMSG(char *topic, byte *payload, unsigned int length); //callback function for MQTT messages
 extern String receivedTopic;         //shared buffer for received topic
-extern byte* receivedBuffer;        //shared buffer for received messages
-extern unsigned int receivedLength; //length of received message
+extern byte* receivedMessage;        //shared buffer for received messages
+extern byte* receivedData; //shared buffer for received
+extern unsigned int receivedMessageLength; //length of received message
+extern unsigned int receivedDataLength; //length of received message
 extern bool messageReceived;        //flag for received message

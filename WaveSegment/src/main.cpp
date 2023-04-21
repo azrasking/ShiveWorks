@@ -40,7 +40,7 @@ const int servoMin = 45;
 const int servoMax = 135;
 void moveServo(int angleMQTT)
 {
-  int angle = map(angleMQTT, 0, 1000, servoMin, servoMax);
+  int angle = map(angleMQTT, 0, 255, servoMin, servoMax);
   servo.write(angle);
 }
 
@@ -81,21 +81,21 @@ void buttonDoubleClick()
   delay(250);
 
   // sweep servo range up
-  for (int i = 0; i < 1000; i++)
+  for (int i = 0; i < 255; i++)
   {
     moveServo(i);
-    delay(2);
+    delay(5);
   }
 
   // sweep servo from max to middle
-  for (int i = 1000; i > 500; i--)
+  for (int i = 255; i > 127; i--)
   {
     moveServo(i);
-    delay(2);
+    delay(5);
   }
 
   // return to the middle position
-  moveServo(500);
+  moveServo(127);
   delay(250);
 
   Serial.println("Self-test complete");
@@ -244,7 +244,7 @@ void initializeHW()
   servo.attach(pin_servo); // attach the servo to the pin
   // servo is in degrees, where 0° us 500uS and 180° is 2500uS
   // limit the servo to 45 to 135 degrees physically
-  moveServo(500); // set the servo to the middle position
+  moveServo(127); // set the servo to the middle position
   delay(250);
 
   hasInitializedHW = true;
@@ -266,7 +266,7 @@ void setup()
   delay(250);
 
   // try to connect to the MQTT broker 5 times, code will not proceed if something does not connect
-  while (!mqtt_reconnect(false) && getConnectionAttemptsMQTT() < 5)
+  while (!mqtt_reconnect() && getConnectionAttemptsMQTT() < 5)
   {
     updateLED(currSegmentStatus); // update the LED state
   }

@@ -88,13 +88,17 @@ segments_ID = []  # an ordered list of all the segments' ID's
 filePath = "segmentsID.csv"
 
 
-# get the ID of a segment from the list and return it as a string (empty string if not found)
+# get the ID of a segment from the list and return it as a string (Null if not found or empty)
 def getSegmentID(segment_no):
     try:
-        return segments_ID[int(segment_no) - 1]
+        if int(segment_no) > segment_count or int(segment_no) < 1:
+            raise IndexError
+        else:
+            return segments_ID[int(segment_no) - 1]
+
     except IndexError:
-        print("Segment number out of range or non-existent")
-        return int(-1)
+        print("Segment number out of range")
+        return "Null"
 
 
 # get the segment number from the ID and return it as an integer (-1 if not found)
@@ -110,9 +114,9 @@ def addSegmentID(segment_no):  # add a segment ID to the list and save it to a .
     if latestOverseerReturnMessage.startswith('pairing'):
 
         # check if the segment number is valid
-        if int(segment_no) > segment_count or int(segment_no) < 1:
+        if getSegmentID(segment_no) == "Null":
             print("Invalid segment number")
-            return
+            return False
         else:
             ID_str = latestOverseerReturnMessage.split("::")[1]
             segments_ID[int(segment_no) - 1] = ID_str
@@ -127,16 +131,18 @@ def addSegmentID(segment_no):  # add a segment ID to the list and save it to a .
             # print segment number and id that has been added to the list
             print("Segment #{} has been added to the list with ID: {}".format(
                 segment_no, ID_str))
+            return True
     else:
         print("No segment available for assignment")
+        return False
 
 
 # remove a segment ID from the list and save it to a .csv file
 def removeSegmentID(segment_no):
     # check if the segment number is valid
-    if int(segment_no) > segment_count or int(segment_no) < 1:
+    if getSegmentID(segment_no) == "Null":
         print("Invalid segment number")
-        return
+        return False
     else:
         segments_ID[int(segment_no) - 1] = "Null"
         saveSegmentsID()
@@ -146,32 +152,42 @@ def removeSegmentID(segment_no):
 
         # print segment number and id that has been removed from the list
         print("Segment #{} has been removed from the list".format(segment_no))
+        return True
 
 
 def loadSegmentsID():   # load the segments ID from a .csv file
-    segments_ID.clear()  # clear the list before loading
-    with open(filePath, 'r') as file:
-        reader = csv.reader(file, delimiter=' ')
-        for row in reader:
-            segments_ID.append(row[0])
+    try:
+        segments_ID.clear()  # clear the list before loading
+        with open(filePath, 'r') as file:
+            reader = csv.reader(file, delimiter=' ')
+            for row in reader:
+                segments_ID.append(row[0])
 
-    # subscribe to the status of all segments if they exist
-    for i in range(1, len(segments_ID) + 1):
-        if getSegmentID(i) != "Null":
-            # subscribe to the status and data return of the new segment
-            segmentSub(i)
+        # subscribe to the status of all segments if they exist
+        for i in range(1, len(segments_ID) + 1):
+            if getSegmentID(i) != "Null":
+                # subscribe to the status and data return of the new segment
+                segmentSub(i)
+        return True
+    except Exception as e:
+        print("Failed to load segments ID list: {}".format(e))
+        return False
 
 
 def saveSegmentsID():   # save the segments ID to a .csv file
-    with open(filePath, 'w', newline='') as file:
-        writer = csv.writer(file, delimiter=' ')
-        for ID in segments_ID:
-            writer.writerow([ID])
+    try:
+        with open(filePath, 'w', newline='') as file:
+            writer = csv.writer(file, delimiter=' ')
+            for ID in segments_ID:
+                writer.writerow([ID])
+        return True
+    except Exception as e:
+        print("Failed to save segments ID list: {}".format(e))
+        return False
 
 
 def clearSegmentID(segment_no):  # clear a segment ID from the list
-    segmentCommand(segment_no, "restart")
-    removeSegmentID(segment_no)
+    return segmentCommand(segment_no, "restart") and removeSegmentID(segment_no)
 
 
 def clearSegmentsID():  # clear the segments ID list
@@ -188,55 +204,71 @@ def clearSegmentsID():  # clear the segments ID list
 # ---------------------- Individual Segment Functions ----------------------#
 # functions to simplify ESP32 messages
 
-
 def segmentSub(segment_no):
-    client.subscribe(segmentPathFn(segment_no, "status"), 1)
-    client.subscribe(segmentPathFn(segment_no, "return"), 1)
+    if getSegmentID(segment_no) != "Null":
+        client.subscribe(segmentPathFn(segment_no, "status"), 1)
+        client.subscribe(segmentPathFn(segment_no, "return"), 1)
+        return True
+    else:
+        return False
 
 
 def segmentUnSub(segment_no):
-    client.unsubscribe(segmentPathFn(segment_no, "status"), 1)
-    client.unsubscribe(segmentPathFn(segment_no, "return"), 1)
+    if getSegmentID(segment_no) != "Null":
+        client.unsubscribe(segmentPathFn(segment_no, "status"), 1)
+        client.unsubscribe(segmentPathFn(segment_no, "return"), 1)
+        return True
+    else:
+        return False
 
 
 def segmentCommand(segment_no, command):
-    client.publish(segmentPathFn(segment_no, "command"), command, 1)
+    if getSegmentID(segment_no) != "Null":
+        client.publish(segmentPathFn(segment_no, "command"), command, 1)
+        return True
+    else:
+        return False
 
 
 def segmentAck(segment_no):
-    segmentCommand(segment_no, "ack")
+    return segmentCommand(segment_no, "ack")
 
 
 def segmentSendData(segment_no, data):
-    client.publish(segmentPathFn(segment_no, "data"), data, 1)
-
+    if getSegmentID(segment_no) != "Null":
+        client.publish(segmentPathFn(segment_no, "data"), data, 1)
+        return True
+    else:
+        return False
 # ---------------------#
 
 
-def segmentPathFn(segment_number, whatToDo):
+def segmentPathFn(segment_no, whatToDo):
+    # there are four topics for each segment: command, return, data, and status
     if whatToDo == "command" or whatToDo == "return" or whatToDo == "status" or whatToDo == "data":
-        return segmentPath + "/" + getSegmentID(int(segment_number)) + "/" + whatToDo
-    # there are three topics for each segment: command, return, and status
+        if getSegmentID(segment_no) != "Null":
+            return segmentPath + "/" + getSegmentID(int(segment_no)) + "/" + whatToDo
 
 
 def segment_reset(segment_no):  # reset a specific segment
-    segmentCommand(segment_no, "reset")
+    return segmentCommand(segment_no, "reset")
 
 
 def segment_restart(segment_no):  # restart a specific segment
-    segmentCommand(segment_no, "restart")
+    return segmentCommand(segment_no, "restart")
 
 
 def timesync_segment(segment_no):  # timesync a specific segment
-    segmentCommand(segment_no, "timesync")
-
-
-def upload_segment(segment_no, data):  # upload data from a specific segment
-    client.publish(segmentPathFn(segment_no, "data"), data, 1)
+    return segmentCommand(segment_no, "timesync")
 
 
 def move_segment(segment_no, position):  # move a specific segment to a position
-    segmentCommand(segment_no, "move::{}".format(position))
+    # check that the position is within the range of the segment 0-255
+    if int(position) > 255 or int(position) < 0:
+        print("Invalid position")
+        return False
+    else:
+        return segmentCommand(segment_no, "move::{}".format(position))
 
 
 def get_segment_status(segment_no):  # get the status of a specific segment
@@ -291,34 +323,50 @@ while True:
         # individual segment commands----------------------------segment topic
 
         case ["upload", *args] if '-s' in args:  # upload to a specific segment
+            # get and verify the segment number validity
             segment_no = args[args.index('-s') + 1]
-            print("Uploading data to segment # {}".format(segment_no))
-            upload_segment(segment_no, "TEST_DATA_STRING")
+            if int(segment_no) > segment_count or int(segment_no) < 1:
+                print("Invalid segment number")
+            else:
+                # programming technique that runs the upload and if it succeeds prints the message
+                if segmentSendData(segment_no, "TEST_DATA_STRING"):
+                    print("Uploaded data to segment # {}".format(segment_no))
+                else:
+                    print("Upload failed")
 
         case ["move", *args] if '-s' and '-p' in args:  # move a specific segment
             segment_no = args[args.index('-s') + 1]
             position = args[args.index('-p') + 1]
-            move_segment(segment_no, position)
-            print("Moving the segment # {} to {}".format(segment_no, position))
+            if move_segment(segment_no, position):
+                print("Moving the segment # {} to {}".format(
+                    segment_no, position))
+            else:
+                print("Move failed")
 
         case ["timesync", *args] if '-s' in args:  # timesync an individual segment
             segment_no = args[args.index('-s') + 1]
-            print("Syncing time in segment # {}".format(segment_no))
+            # print("Syncing time in segment # {}".format(segment_no))
 
         case ["clear_pairing", *args] if '-s' in args:  # clear a specific segment ID
             segment_no = args[args.index('-s') + 1]
-            clearSegmentID(segment_no)
-            print("Clearing the segment # {}".format(segment_no))
+            if clearSegmentID(segment_no):
+                print("Cleared the segment # {}".format(segment_no))
+            else:
+                print("Clearing failed")
 
         case ["reset", *args] if '-s' in args:  # reset a specific segment
             segment_no = args[args.index('-s') + 1]
-            segment_reset(segment_no)
-            print("Resetting the segment # {}".format(segment_no))
+            if segment_reset(segment_no):
+                print("Reset the segment # {}".format(segment_no))
+            else:
+                print("Reset failed")
 
         case ["restart", *args] if '-s' in args:  # restart a specific segment
             segment_no = args[args.index('-s') + 1]
-            segment_restart(segment_no)
-            print("Restarting the segment # {}".format(segment_no))
+            if segment_restart(segment_no):
+                print("Restarting the segment # {}".format(segment_no))
+            else:
+                print("Restart failed")
 
         case ["debug", *args] if '-s' in args:  # debug a specific segment
             segment_no = args[args.index('-s') + 1]
@@ -328,7 +376,10 @@ while True:
 
         case ["assign", *args] if '-s' in args:  # assign a segment an ID
             segment_no = args[args.index('-s') + 1]
-            addSegmentID(segment_no)
+            if addSegmentID(segment_no):
+                print("Assignment successful")
+            else:
+                print("Assignment failed")
 
         # misc----------------------------
 

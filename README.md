@@ -99,8 +99,8 @@
 | Downloading Experiment   | Yellow Blinking     |
 | Ready for Experiment     | Green Blinking      |
 | Experiment Running       | Green Solid         |
-| E-Stop                   | Red Blinking        |
-| Fault                    | Dark Red Solid      |
+| E-Stop                   | Red Solid           |
+| Fault                    | Dark Red Blinking   |
 |                          |                     |
 
 | Button Press      | Action                               |

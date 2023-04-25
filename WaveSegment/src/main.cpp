@@ -1,9 +1,12 @@
+// © Jakub Jandus 2023
+
 #include <Arduino.h>    // a library for the Arduino platform
 #include "FastLED.h"    // a library for controlling LEDs
 #include "ESP32Servo.h" // a library for controlling servos
 #include "OneButton.h"  // a library for the push button
 
 #include "mqtt.h" // a library for connecting to an MQTT broker and wirelessly controlling the shiver
+#include "NTP.h"  // a library for getting the current time from an NTP server and keeping it updated
 
 //------------------------------------//----pins
 
@@ -108,6 +111,8 @@ void buttonLongPress()
   ESP.restart(); // restart the ESP32
 }
 
+//----
+
 // display different colors depending on the segment status
 const int blinkInterval = 500;
 uint32_t lastLEDupdate = 0; // the last time in milliseconds the LEDs were updated
@@ -149,11 +154,11 @@ void updateLED(SegmentStatus segStat)
     break;
   case Estop:
     color = CRGB::Red;
-    isBlinking = true;
+    isBlinking = false;
     break;
   case Fault:
     color = CRGB::DarkRed;
-    isBlinking = false;
+    isBlinking = true;
     break;
   default:
     break;
@@ -179,6 +184,8 @@ void updateLED(SegmentStatus segStat)
   leds[1] = color;
   FastLED.show();
 }
+
+//----
 
 // convert the segment status to a string that can be sent over MQTT
 String getSegmentStatusString()
@@ -251,6 +258,8 @@ void initializeHW()
   delay(250);
 }
 
+//---------------------
+
 bool hasInitializedMQTT = false;
 void setup()
 {
@@ -310,10 +319,11 @@ bool checkMQTTAcknowledged()
 void loop()
 {
   button.tick();                // update the button state
-  client.loop();                // update the ESP32 MQTT client data and communication
+  if (!client.loop())           // update the ESP32 MQTT client data and communication
+    currSegmentStatus = Fault;  // if the client loop fails or is disconnected, set the status to fault
   updateLED(currSegmentStatus); // update the LED state
 
-  // check if a message has been received and handle accordingly
+  //---- check if a message has been received and handle accordingly
   if (messageReceived)
   {
     messageReceived = false;
@@ -382,6 +392,8 @@ void loop()
     {
     }
   }
+
+  //----state machine
 
   switch (currSegmentStatus)
   {

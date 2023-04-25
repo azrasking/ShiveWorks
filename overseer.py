@@ -1,13 +1,14 @@
-# Jakub Jandus 2023
+# © Jakub Jandus 2023
 # Overseer class for the ShiveWorks project
 # This class is responsible for the communication with the segments and the movement of the segments
 
 import paho.mqtt.client as mqtt
 import csv
 import time
+from datetime import datetime, timezone
 
 # ---TODO--- #
-# 1. servo angle limiter
+# 1. NTP time sync
 # 2. upload working
 
 
@@ -21,6 +22,7 @@ overseerReturnPath = "ShiveWorks/overseer/return"
 # expanded into ShiveWorks/segment/segmentID/command further below
 segmentPath = "ShiveWorks/segment"
 
+# local broker address, if the server runs on the same PC as the client never change it
 broker = "127.0.0.1"
 port = 1884
 client = mqtt.Client("Master PC")
@@ -314,6 +316,8 @@ while True:
 
         case ["timesync"]:
             print("Syncing time in all segments")
+            # get the current time in UTC so there are no issues with timezones and daylight savings
+            now_utc = datetime.now(timezone.utc)
             # client.publish(overseerCommandPath, "timesync::all", 1)
 
         case ["clear_pairing"]:

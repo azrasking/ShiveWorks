@@ -1,3 +1,5 @@
+// © Jakub Jandus 2023
+
 #include <mqtt.h>
 #include <credentials.h>
 
@@ -10,7 +12,7 @@ PubSubClient client(wifiClient);
 const int maxDataLength = 32768, maxMessageLength = 128;
 const char *overseerCommandPath = "ShiveWorks/overseer/command";
 const char *overseerReturnPath = "ShiveWorks/overseer/return";
-// autoassigned is the unique MAC address of the ESP32 backwards in HEX
+// auto-assigned is the unique MAC address of the ESP32 backwards in HEX
 // this ID gets called once more when subscribing to the MQTT broker
 const char *segmentPathMain = "ShiveWorks/segment/";
 

@@ -43,7 +43,9 @@ const int servoMin = 45;
 const int servoMax = 135;
 void moveServo(int angleMQTT)
 {
-  int angle = map(angleMQTT, 0, 255, servoMin, servoMax);
+
+  int angle = constrain(angleMQTT, 0, 255); // constrain the angle to 0-255
+  angle = map(angle, 0, 255, servoMin, servoMax);
   servo.write(angle);
 }
 
@@ -67,15 +69,15 @@ void buttonDoubleClick()
   leds[0] = CRGB::Red;
   leds[1] = CRGB::Green;
   FastLED.show();
-  delay(2000);
+  delay(1200);
   leds[0] = CRGB::Green;
   leds[1] = CRGB::Blue;
   FastLED.show();
-  delay(2000);
+  delay(1200);
   leds[0] = CRGB::Blue;
   leds[1] = CRGB::Red;
   FastLED.show();
-  delay(2000);
+  delay(1200);
 
   // turn off LEDs
   leds[0] = CRGB::Black;
@@ -87,17 +89,25 @@ void buttonDoubleClick()
   for (int i = 0; i < 255; i++)
   {
     moveServo(i);
-    delay(5);
+    delay(40);
   }
 
   // sweep servo from max to middle
   for (int i = 255; i > 127; i--)
   {
     moveServo(i);
-    delay(5);
+    delay(20);
   }
 
   // return to the middle position
+  moveServo(127);
+  delay(250);
+
+  // quick test
+  moveServo(0);
+  delay(500);
+  moveServo(255);
+  delay(500);
   moveServo(127);
   delay(250);
 
@@ -307,12 +317,107 @@ void beginPairing()
   currSegmentStatus = Pairing;
 }
 
+//------------------------------------//---MQTT message handling
+
 // a generic function that represents the overseer acknowledging receipt of a message
 bool mqttAck = false;
 bool checkMQTTAcknowledged()
 {
   return mqttAck;
 };
+
+// using global variables, and variables defined in mqtt.cpp to handle MQTT messages
+bool handleMQTTmessage()
+{
+  // check if the message is a command
+  if (receivedTopic == overseerCommandPath)
+  {
+    String commandStr = (char *)receivedMessage;
+    if (commandStr == "stop")
+    {
+      currSegmentStatus = Estop; // detaches the servo from the microcontroller
+    }
+    else if (commandStr == "start")
+    {
+    }
+    else if (commandStr == "reset")
+    {
+      for (int i = 0; i < receivedMessageLength; i++)
+      {
+        receivedMessage[i] = 0; // clear the buffer byte by byte
+      }
+
+      for (int i = 0; i < receivedDataLength; i++)
+      {
+        receivedData[i] = 0; // clear the buffer byte by byte
+      }
+    }
+    else if (commandStr.startsWith("move")) // a manual move command {{move::angle}}
+    {
+      // find the second colon in the command
+      int colonIndex = commandStr.lastIndexOf(":");
+      // get the angle from the command
+      int angle = commandStr.substring(colonIndex + 1).toInt();
+      // move the servo to the angle
+      moveServo(angle);
+      delay(250);
+    }
+    return true;
+  }
+
+  // command payload will always be a string, while data payload will be a byte array
+  if (receivedTopic == getSegmentCommandPath())
+  {
+    String commandStr = (char *)receivedMessage;
+    // if the received message payload is "status_report", send the status report
+    if (commandStr == "status_report")
+    {
+      sendSegmentStatus(getSegmentStatusString().c_str());
+    }
+
+    if (commandStr == "ack") // overseer's acknowledgement of a message received
+    {
+      mqttAck = true;
+    }
+
+    if (commandStr == "restart") // restart the ESP32
+    {
+      ESP.restart();
+    }
+
+    if (commandStr == "reset") // clear the buffer
+    {
+      for (int i = 0; i < receivedMessageLength; i++)
+      {
+        receivedMessage[i] = 0; // clear the buffer byte by byte
+      }
+
+      for (int i = 0; i < receivedDataLength; i++)
+      {
+        receivedData[i] = 0; // clear the buffer byte by byte
+      }
+    }
+
+    if (commandStr.startsWith("move")) // a manual move command {{move::angle}}
+    {
+      // find the second colon in the command
+      int colonIndex = commandStr.lastIndexOf(":");
+      // get the angle from the command
+      int angle = commandStr.substring(colonIndex + 1).toInt();
+      // move the servo to the angle
+      moveServo(angle);
+      delay(250);
+    }
+    return true;
+  }
+
+  if (receivedTopic == getSegmentDataPath())
+  {
+    return true;
+  }
+  // if the topic is not recognized, return false
+  return false;
+}
 
 //------------------------------------//---loop
 
@@ -327,70 +432,7 @@ void loop()
   if (messageReceived)
   {
     messageReceived = false;
-    // check if the message is a command
-    if (receivedTopic == overseerCommandPath)
-    {
-      String commandStr = (char *)receivedMessage;
-      if (commandStr == "stop")
-      {
-        currSegmentStatus = Estop; // detaches the servo from the microcontroller
-      }
-      else if (commandStr == "start")
-      {
-      }
-      else if (commandStr == "reset")
-      {
-      }
-    }
-
-    // command payload will always be a string, while data payload will be a byte array
-    else if (receivedTopic == getSegmentCommandPath())
-    {
-      String commandStr = (char *)receivedMessage;
-      // if the received message payload is "status_report", send the status report
-      if (commandStr == "status_report")
-      {
-        sendSegmentStatus(getSegmentStatusString().c_str());
-      }
-
-      if (commandStr == "ack") // overseer's acknowledgement of a message received
-      {
-        mqttAck = true;
-      }
-
-      if (commandStr == "restart") // restart the ESP32
-      {
-        ESP.restart();
-      }
-
-      if (commandStr == "reset") // clear the buffer
-      {
-        for (int i = 0; i < receivedMessageLength; i++)
-        {
-          receivedMessage[i] = 0; // clear the buffer byte by byte
-        }
-
-        for (int i = 0; i < receivedDataLength; i++)
-        {
-          receivedData[i] = 0; // clear the buffer byte by byte
-        }
-      }
-
-      if (commandStr.startsWith("move")) // a manual move command {{move::angle}}
-      {
-        // find the second colon in the command
-        int colonIndex = commandStr.lastIndexOf(":");
-        // get the angle from the command
-        int angle = commandStr.substring(colonIndex + 1).toInt();
-        // move the servo to the angle
-        moveServo(angle);
-        delay(250);
-      }
-    }
-
-    else if (receivedTopic == getSegmentDataPath())
-    {
-    }
+    handleMQTTmessage();
   }
 
   //----state machine

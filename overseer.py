@@ -193,12 +193,12 @@ def clearSegmentID(segment_no):  # clear a segment ID from the list
 
 
 def clearSegmentsID():  # clear the segments ID list
+    segmentMasterCommand("stop")
     segments_ID.clear()
     for i in range(segment_count):
         segments_ID.append("Null")
     saveSegmentsID()
     print("Segments ID list has been cleared, resetting program...")
-    client.publish(overseerCommandPath, "stop", 1)
     client.loop_stop()
     quit()
 
@@ -237,11 +237,17 @@ def segmentAck(segment_no):
 
 
 def segmentSendData(segment_no, data):
+    # send data to specific segment
     if getSegmentID(segment_no) != "Null":
         client.publish(segmentPathFn(segment_no, "data"), data, 1)
         return True
     else:
         return False
+
+
+def segmentMasterCommand(command):
+    # command to the overseer master topic that goes to all segments
+    client.publish(overseerCommandPath, command, 1)
 # ---------------------#
 
 
@@ -292,27 +298,26 @@ while True:
     match input_str.split():
         # global commands----------------------------overseer topic
         case ["stop"]:
-            client.publish(overseerCommandPath, "stop", 1)
+            segmentMasterCommand("stop")
             print("Stopping the experiment")
 
         case ["start"]:
-            client.publish(overseerCommandPath, "start", 1)
+            segmentMasterCommand("start")
             print("Starting the experiment")
 
         case ["reset"]:
-            client.publish(overseerCommandPath, "reset", 1)
+            segmentMasterCommand("reset")
             print("Resetting all segments")
 
+        case ["move", *args] if ('-p' in args and '-s' not in args):
+            position = args[args.index('-p') + 1]
+            segmentMasterCommand("move::{}".format(position))
+            print("Moving all segments")
         # all segment commands----------------------------segment topic
 
         case ["upload"]:
             print("Uploading data to all segments...")
             # client.publish(overseerCommandPath, "upload::all")
-
-        case ["move", *args] if ('-p' in args and '-s' not in args):
-            position = args[args.index('-p') + 1]
-            # client.publish(overseerCommandPath, "move::{}".format(position), 1)
-            print("Moving all segments")
 
         case ["timesync"]:
             print("Syncing time in all segments")

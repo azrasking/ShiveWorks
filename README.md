@@ -1,26 +1,44 @@
 # ShiveWorks 
 **ShiveWorks - a dynamic material research project at WPI**
 
-* The purpose of this project is to create a device that demonstrates several concepts from the theory of dynamic materials. ShiveWorks, the whole device, consists of a series of segments that can be actuated individually or in groups to create a variety of static or dynamic shapes. The segments are connected to a central controller script that can be used to control the segments individually or in groups. The controller can also be used to upload experiment parameters to the segments and to collect data from the segments during experiments. ShiveWorks is intended to be used as a research tool to study the behavior and the potential applications of dynamic materials.
+* The purpose of this project is to create a device that demonstrates several concepts from the theory of dynamic materials. 
+* ShiveWorks, the whole device, consists of a series of segments that can be actuated individually or in groups to create a variety of static or dynamic shapes. 
+* The segments are connected to a central controller script that can be used to control the segments individually or in groups. 
+* The controller can also be used to upload experiment parameters to the segments and to collect data from the segments during experiments. 
+* ShiveWorks is intended to be used as a research tool to study the behavior and the potential applications of dynamic materials.
 
 ## Contributors
 * Project Lead: @[William Sanguinet](https://github.com/williamsanguinet) | wcsanguinet@wpi.edu
 * Engineer Lead: @[Jakub Jandus](https://github.com/BambusGS) | jjandus@wpi.edu
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-mit.svg)](https://opensource.org/licenses/MIT)
+
+
+# Running an Experiment
+* Generate actuation data by running GEN.py with appropriate parameters
+  * The script will generate many .csv files with the actuation data for each individual segment
+  * The script should also plot of the actuation pattern
+* Start the MQTT broker 
+* Run the overseer.py python script - issue commands by typing a command into the terminal
+  * Pair all the modules, and upload the experiment parameters to the ESP32 modules/segments
+    * Reference table below for light indicating segment status
+  * Keep in mind that maximum payload size is 64kBytes
+* Segment should start to light up and the indicator light should blink green indicating it is ready
+* Issue a "start" command that will begin a countdown sequence, the indicator light will become solid green for the duration of the experiment
+* In case of an E-stop ("stop" command) or other fault, the indicator light will blink red
 
 
 # How to get started:
-## MQTT Broker Installation
+## MQTT Broker Installation and Startup
 * Download and install the latest [mosquitto MQTT broker](https://mosquitto.org/download/)
 * Linux
-  * Run `mosquitto -v --config-file {{path/to/file.conf}}` to start the broker
+  * Run `mosquitto -v --config-file {{path/to/mosquitto.conf}}` to start the broker
 * Windows
-  * Go to the mosquitto installation directory (`cd C:\Program Files\mosquitto`), open terminal and run `mosquitto -v --config-file {{path/to/file.conf}` to start the broker
+  * Go to the mosquitto installation directory (`cd C:\Program Files\mosquitto`), open terminal and run `mosquitto -v --config-file {{path/to/mosquitto.conf}` to start the broker
   * Make sure the network is set to "Private" in the Windows Firewall settings
   * An [MQTT Explorer](https://mqtt-explorer.com/) is recommended to monitor the MQTT messages
 
-## Overseer.py
+## Overseer.py Main Control Script
   * Download and install [paho](https://pypi.org/project/paho-mqtt/)
   * This scrips is used as a main translator between the simulation and the segments
   * General MQTT command format is ''{{command}}::{{data}}
@@ -46,7 +64,11 @@
 | move -s 42 -p 255   | Move segment 42 to position max position (255)                   |
 
 <!-- implement a segment servo offset function -->
-
+## Network Configuration
+* The overseer.py script will automatically connect to the MQTT broker, as they are usually running on the same machine
+* Connect your computer to the same WiFi network as the ESP32 modules, the network should have access to the outside internet for NTP synchronization
+* Configure your machine to have a static IP address on the same network as the ESP32 modules
+  * The default is 192.168.1.1; this should be outside the dynamic DHCP range of the router
 
 # Experiment Setup
 ## ESP32 Segment Code Upload
@@ -86,7 +108,7 @@
 * Each segment will then subscribe to the topic `ShiveWorks/segment/ID` where ID represents a unique ID for each segment is the sequence number of the segment
   * This is topic with transmit (`/return`), command (`/command`), obtain actuation data (`/data`) and status (`/status`) channels for to the specific segment
   * Longest command shall be 128 bytes long
-  * Experiment data is stored separately from the message, maximum size is 32kB
+  * Experiment data is stored separately from the message, maximum size is 64kB
 
  
 | Segment Status           | LED Indicator Light |
@@ -109,13 +131,3 @@
 | Button Double Tap | Segment Self-Test                    |
 | Button 2s+ hold   | Restart Segment                      |
 |                   |                                      |
-
-  
-
-## Running an Experiment
-* Run the attached python scrypt and enter the desired experiment parameters
-  * The script will automatically connect to the MQTT broker and send the experiment parameters to the ESP32
-  * Maximum payload size is 32kBytes
-* Segment should start to light up and the indicator light should blink green indicating it is ready
-* Once the countdown sequence is initiated, the indicator light will become solid green for the duration of the experiment
-* In case of an E-stop or other fault, the indicator light will blink red

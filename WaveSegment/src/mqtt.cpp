@@ -9,7 +9,7 @@ WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
 //------------------------------------//---messages
-const int maxDataLength = 32768, maxMessageLength = 128;
+const int maxDataLength = 65536 , maxMessageLength = 128;
 const char *overseerCommandPath = "ShiveWorks/overseer/command";
 const char *overseerReturnPath = "ShiveWorks/overseer/return";
 // auto-assigned is the unique MAC address of the ESP32 backwards in HEX

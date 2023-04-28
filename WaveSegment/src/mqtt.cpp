@@ -9,7 +9,7 @@ WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
 //------------------------------------//---messages
-const int maxDataLength = 65536 , maxMessageLength = 128;
+const uint16_t maxDataLength = 535, maxMessageLength = 128;
 const char *overseerCommandPath = "ShiveWorks/overseer/command";
 const char *overseerReturnPath = "ShiveWorks/overseer/return";
 // auto-assigned is the unique MAC address of the ESP32 backwards in HEX
@@ -79,7 +79,7 @@ bool wifi_reconnect(bool forceReconnect)
 
             // attempt to connect to WiFi network
             lastWiFiConnectionAttempt = millis();
-            WiFi.mode(WIFI_STA); // set the ESP32 to be a WiFi client
+            // WiFi.mode(WIFI_STA); // set the ESP32 to be a WiFi client
             WiFi.begin(ssid, password);
 
             isConnecting = true;
@@ -107,11 +107,11 @@ bool wifi_reconnect(bool forceReconnect)
             Serial.println("\nConnected with IP address: ");
             Serial.println(WiFi.localIP());
 #endif
-
             isConnecting = false;
         }
         return true;
     }
+
     return false;
 }
 

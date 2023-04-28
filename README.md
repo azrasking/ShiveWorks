@@ -38,6 +38,12 @@
   * Make sure the network is set to "Private" in the Windows Firewall settings
   * An [MQTT Explorer](https://mqtt-explorer.com/) is recommended to monitor the MQTT messages
 
+## Network Configuration
+* The overseer.py script will automatically connect to the MQTT broker, as they are usually running on the same machine
+* Connect your computer to the same WiFi network as the ESP32 modules, the network should have access to the outside internet for NTP synchronization
+* Configure your machine to have a static IP address on the same network as the ESP32 modules (using Windows Network and Sharing Center)
+  * The default is 192.168.1.1; this should be outside the dynamic DHCP range of the router
+  
 ## Overseer.py Main Control Script
   * Download and install [paho](https://pypi.org/project/paho-mqtt/)
   * This scrips is used as a main translator between the simulation and the segments
@@ -64,11 +70,7 @@
 | move -s 42 -p 255   | Move segment 42 to position max position (255)                   |
 
 <!-- implement a segment servo offset function -->
-## Network Configuration
-* The overseer.py script will automatically connect to the MQTT broker, as they are usually running on the same machine
-* Connect your computer to the same WiFi network as the ESP32 modules, the network should have access to the outside internet for NTP synchronization
-* Configure your machine to have a static IP address on the same network as the ESP32 modules
-  * The default is 192.168.1.1; this should be outside the dynamic DHCP range of the router
+
 
 # Experiment Setup
 ## ESP32 Segment Code Upload

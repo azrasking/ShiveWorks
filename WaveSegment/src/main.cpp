@@ -5,6 +5,8 @@
 #include "ESP32Servo.h" // a library for controlling servos
 #include "OneButton.h"  // a library for the push button
 
+#include "esp_task_wdt.h"
+
 #include "mqtt.h" // a library for connecting to an MQTT broker and wirelessly controlling the shiver
 #include "NTP.h"  // a library for getting the current time from an NTP server and keeping it updated
 
@@ -275,22 +277,30 @@ void setup()
 {
   Serial.begin(115200); // initialize the serial monitor
   initializeHW();       // initialize the LEDs, button, and servo
-
   // try to connect to the wifi 5 times
   while (!wifi_reconnect(false) && getConnectionAttemptsWiFi() < 5)
   {
+    delay(200);                   // a safety delay to prevent the ESP32 from crashing
     updateLED(currSegmentStatus); // update the LED state
   }
   WiFi.status() == WL_CONNECTED ? currSegmentStatus = Initializing : currSegmentStatus = Fault;
+  if (currSegmentStatus == Fault) // early exit if the wifi connection fails
+  {
+    WiFi.disconnect(); // disconnect from the wifi
+    return;
+  }
   delay(250);
 
   // try to connect to the MQTT broker 5 times, code will not proceed if something does not connect
   while (!mqtt_reconnect() && getConnectionAttemptsMQTT() < 5)
   {
+    delay(200);                   // a safety delay to prevent the ESP32 from crashing
     updateLED(currSegmentStatus); // update the LED state
   }
   hasInitializedMQTT = true;
   client.connected() == true ? currSegmentStatus = Connected : currSegmentStatus = Fault;
+  if (currSegmentStatus == Fault) // early exit if the wifi connection fails
+    return;
   delay(250);
 
   // subscribe to the general overseer command topic

@@ -311,8 +311,11 @@ while True:
 
         case ["move", *args] if ('-p' in args and '-s' not in args):
             position = args[args.index('-p') + 1]
-            segmentMasterCommand("move::{}".format(position))
-            print("Moving all segments")
+            if (int(position) > 255 or int(position) < 0):
+                print("Invalid position")
+            else:
+                segmentMasterCommand("move::{}".format(position))
+                print("Moving all segments")
         # all segment commands----------------------------segment topic
 
         case ["upload"]:

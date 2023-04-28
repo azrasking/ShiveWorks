@@ -115,8 +115,8 @@ def addSegmentID(segment_no):  # add a segment ID to the list and save it to a .
     # check if there is a segment available for assignment
     if latestOverseerReturnMessage.startswith('pairing'):
 
-        # check if the segment number is valid
-        if getSegmentID(segment_no) == "Null":
+        # check if the segment number is valid (between 0 and maxSegmentNumber)
+        if int(segment_no) < 0 and int(segment_no) > segment_count:
             print("Invalid segment number")
             return False
         else:

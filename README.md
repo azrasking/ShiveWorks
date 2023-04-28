@@ -22,7 +22,8 @@
 * Run the overseer.py python script - issue commands by typing a command into the terminal
   * Pair all the modules, and upload the experiment parameters to the ESP32 modules/segments
     * Reference table below for light indicating segment status
-  * Keep in mind that maximum payload size is 64kBytes
+  * Keep in mind that maximum payload size is 64kBytes and the maximum timestamp is 65000 milliseconds
+  * After running the experiment the data will loop forever
 * Segment should start to light up and the indicator light should blink green indicating it is ready
 * Issue a "start" command that will begin a countdown sequence, the indicator light will become solid green for the duration of the experiment
 * In case of an E-stop ("stop" command) or other fault, the indicator light will blink red
@@ -34,7 +35,7 @@
 * Linux
   * Run `mosquitto -v --config-file {{path/to/mosquitto.conf}}` to start the broker
 * Windows
-  * Go to the mosquitto installation directory (`cd C:\Program Files\mosquitto`), open terminal and run `mosquitto -v --config-file {{path/to/mosquitto.conf}` to start the broker
+  * Go to the mosquitto installation directory (`cd C:\Program Files\mosquitto`), open terminal and run `mosquitto -v --config-file {{path/to/mosquitto.conf}}` to start the broker
   * Make sure the network is set to "Private" in the Windows Firewall settings
   * An [MQTT Explorer](https://mqtt-explorer.com/) is recommended to monitor the MQTT messages
 
@@ -42,7 +43,9 @@
 * The overseer.py script will automatically connect to the MQTT broker, as they are usually running on the same machine
 * Connect your computer to the same WiFi network as the ESP32 modules, the network should have access to the outside internet for NTP synchronization
 * Configure your machine to have a static IP address on the same network as the ESP32 modules (using Windows Network and Sharing Center)
+  * Set the network type as private
   * The default is 192.168.1.1; this should be outside the dynamic DHCP range of the router
+    * Subnet mask is 255.255.254.0, gateway is 192.168.1.0, primary DNS is 192.168.1.0
   
 ## Overseer.py Main Control Script
   * Download and install [paho](https://pypi.org/project/paho-mqtt/)
@@ -73,27 +76,6 @@
 
 
 # Experiment Setup
-## ESP32 Segment Code Upload
-* Segments are numbered starting from 1
-* All source files are in WaveSegment folder, in the 'src' directory
-* Enter correct local WiFi credential and MQTT broker IP address in credentials.h (rename and fill out sample_credentials.h)
-* Compile and upload main.c to the ESP32
-  * Might require installation of [ESP32 drivers](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)
-  * If we want to see diagnostic information, we can use the Serial Monitor in the Arduino IDE with a baud rate of 115200
-<!-- * Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
-  * Compile and upload main.c to the ESP32
-  * Run `python3 OTA.py` to upload the sketch to the ESP32 over WiFi -->
-![Segment Circuit](./Media/ShiveSegmentCircuit.png)
-### Component List
-* ESP32 DevKitV1
-* MPU6050 Accelerometer/Gyroscope
-* WS2812B RGB LED 2x
-* MG90D Servo 2x
-* Logic Level Converter 3.3V to 5V
-* Voltage Regulator to 5V
-* Push Button
-* LiPo Battery 3.7V 800mAh 2x
-  
 ## Segment Power Up and Identification
 * Power up the segment - upon initialization the indicator light should light up blue
 * ESP32 will connect to the local MQTT broker - upon connection the indicator light should blink blue
@@ -133,3 +115,27 @@
 | Button Double Tap | Segment Self-Test                    |
 | Button 2s+ hold   | Restart Segment                      |
 |                   |                                      |
+
+
+## ESP32 Segment Code Upload
+* Segments are numbered starting from 1
+* All source files are in WaveSegment folder, in the 'src' directory
+* Enter correct local WiFi credential and MQTT broker IP address in credentials.h (rename and fill out sample_credentials.h)
+* Compile and upload main.c to the ESP32
+  * Might require installation of [ESP32 drivers](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)
+  * If we want to see diagnostic information, we can use the Serial Monitor in the Arduino IDE with a baud rate of 115200
+<!-- * Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
+  * Compile and upload main.c to the ESP32
+  * Run `python3 OTA.py` to upload the sketch to the ESP32 over WiFi -->
+![Segment Circuit](./Media/ShiveSegmentCircuit.png)
+
+
+### Component List
+* ESP32 DevKitV1
+* MPU6050 Accelerometer/Gyroscope
+* WS2812B RGB LED 2x
+* MG90D Servo 2x
+* Logic Level Converter 3.3V to 5V
+* Voltage Regulator to 5V
+* Push Button
+* LiPo Battery 3.7V 800mAh 2x

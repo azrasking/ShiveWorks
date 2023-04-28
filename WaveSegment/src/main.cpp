@@ -287,6 +287,7 @@ void setup()
   if (currSegmentStatus == Fault) // early exit if the wifi connection fails
   {
     WiFi.disconnect(); // disconnect from the wifi
+    Serial.println("Could not connect to WiFi");
     return;
   }
   delay(250);

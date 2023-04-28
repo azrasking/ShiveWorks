@@ -74,7 +74,7 @@ bool wifi_reconnect(bool forceReconnect)
             Serial.print(WiFi.macAddress());
 
             Serial.print("\nConnecting to: ");
-            Serial.print(ssid);
+            Serial.println(ssid);
 #endif
 
             // attempt to connect to WiFi network

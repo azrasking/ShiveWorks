@@ -6,6 +6,7 @@ Created on Sun Feb  5 17:32:12 2023
 @author: bill
 """
 # Import numpy and matplotlib
+import csv
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -164,6 +165,7 @@ ax9_1 = plt.axes()
 plot9_1 = ax9_1.plot(T_Samp[:], Z_g_int[:])
 ax9_1.set_xlabel(r'$t$')
 ax9_1.set_ylabel(r'$u$')
+# plt.savefig("plot.png")
 
 
 fig9 = plt.figure(10)
@@ -260,18 +262,46 @@ ax11_1.set_ylabel(r'$t$')
 
 
 # ------------------#
+
 # a function that takes the K_g array and creates a CVS file for the each segment in the format of "timestamp, material"
 
 
 def makeCVSfiles():  # the array K_g stores the material values for each segment at each time step including time steps where the material is not changing
-    filePath = "Actuation_data"
-    num_segment = N_SpatElem
+    folderName = "Actuation_data"
+    total_number_segments = N_SpatElem
+
     try:
-        with open(filePath, 'w', newline='') as file:
-            writer = csv.writer(file, delimiter=',')
-            # for ID in segments_ID:
-            #     writer.writerow([ID])
+        # check that the total runtime is not greater than 65535 milliseconds
+        if len(t_SampTime) > 65535:
+            raise ValueError("Total runtime must be less than 65535 ms")
+
+        for segment_number in range(total_number_segments):
+            segmentFilePath = folderName + '/' + \
+                str(segment_number + 1) + ".csv"
+
+            # generate the 2D array that hold time and material value [timestamp, material]
+            #      timestamps are stored in t_SampTime linearly as milliseconds
+            #      K_g[x][y] stores value for each timestamp as [x], and segment number zero-indexed at [y]
+            segmentArray = []
+
+            # go through each timestamp that has been generated
+            for time_index in range(len(t_SampTime)):
+                # convert to milliseconds as integer value
+                timestamp = round(t_SampTime[time_index] * 1000)
+                # K_g[x][y] stores value for each timestamp as [x], and segment number zero-indexed at [y]
+                material_at_timestamp = round(K_g[time_index][segment_number])
+                segmentArray.append([timestamp, material_at_timestamp])
+            # print(segmentArray[:20])
+
+            with open(segmentFilePath, 'w', newline='') as file:
+                writer = csv.writer(file, delimiter=',')
+                for row in segmentArray:
+                    writer.writerow(row)
         return True
+
     except Exception as e:
         print("Failed to save segments ID list: {}".format(e))
         return False
+
+
+print("Generating actuation data successful?: {}".format(makeCVSfiles()))

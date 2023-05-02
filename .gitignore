@@ -3,3 +3,4 @@ credentials.h
 .vscode
 platformio.ini
 Actuation_data
+segmentsID.csv

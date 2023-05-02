@@ -6,7 +6,7 @@ import paho.mqtt.client as mqtt
 import csv
 import time
 from datetime import datetime, timezone
-from struct import pack, unpack
+from struct import pack, unpack, calcsize
 
 # ---TODO--- #
 
@@ -22,7 +22,7 @@ overseerReturnPath = "ShiveWorks/overseer/return"
 segmentPath = "ShiveWorks/segment"
 
 # local path to the folder containing the actuation data in .csv format
-actuationDataPath = "./Actuation_data"
+actuationDataPath = "./PropertyControlFunctions/Actuation_data"
 
 # local broker address, if the server runs on the same PC as the client never change it
 broker = "127.0.0.1"
@@ -216,8 +216,14 @@ def clearSegmentsID():  # clear the segments ID list
 actuationDataArray = []
 
 
-# function to first load the .csv file from the folder (if it exists) into an array while type-checking
+# function to first load all the .csv file from the folder (if it exists) into an array while type-checking
+#    writes the first and last value regardless of if it should be dropped
+#    if no value is present at start (= start material value is -100), assume center position of 127
 def loadSegmentData(segment_no):
+    global actuationDataArray
+    firstRow = [0, 0]
+    lastRow = [0, 0]
+
     segmentDataPath = actuationDataPath + '/' + segment_no + ".csv"
     actuationDataArray.clear()
 
@@ -225,21 +231,55 @@ def loadSegmentData(segment_no):
         with open(segmentDataPath, 'r') as file:
             reader = csv.reader(file, delimiter=',')
             # go through each row and convert them to the [time, value] format
+            row_index = 0
             for row in reader:
-                row_clean = convertSegmentData(row)
+                if row_index == 0:  # save the first row
+                    firstRow = row
+                lastRow = row  # save the last row
 
+                # convert the segment values
+                row_clean = convertSegmentData(row)
                 if row_clean:  # if the array not empty, append it
                     actuationDataArray.append(row_clean)
-        # print(actuationDataArray)
-        return True
+
+                row_index = row_index + 1
 
     except Exception as e:
         print("Failed to load segments data: {}".format(e))
         return False
 
+    # convert the values to integers
+    firstRow[0] = int(firstRow[0])
+    firstRow[1] = int(firstRow[1])
+    lastRow[0] = int(lastRow[0])
+    lastRow[1] = int(lastRow[1])
+
+    print(firstRow)
+    print(lastRow)
+    print(actuationDataArray)
+
+    # if the first row is value-empty, then write the default middle value
+    if firstRow[1] == -100:
+        firstRow[1] = 127
+        actuationDataArray.insert(0, firstRow)
+
+    # if the last timestamp of the array is not the same time as in the last row of the .csv file
+    #    then copy the last actuation value at the final timestamp
+    if actuationDataArray[-1][0] != lastRow[0]:
+        lastTimestamp = lastRow[0]
+        lastActuationData = actuationDataArray[-1][1]
+        actuationDataArray.append([lastTimestamp, lastActuationData])
+
+    print(firstRow)
+    print(lastRow)
+    print(actuationDataArray)
+
+    return True
+
 
 # function that checks the timestamp and value validity
 def convertSegmentData(CSV_row):
+    global actuationDataArray, firstRow, lastRow
     CSV_row_clean = []
 
     timestamp = int(CSV_row[0])
@@ -261,16 +301,20 @@ def convertSegmentData(CSV_row):
 
 # function that takes the processed data and returns a struct formatted as binary uint16_t, uint8_t, ...
 def packageSegmentData(segment_no):
+    global actuationDataArray
     if loadSegmentData(segment_no):
         # formatting for the ESP32 shall be little-endian, 2-byte unsigned short, 1-byte unsigned char
-        packed = pack('<' + 'H' + 'B')    
-    
-    return packed
-    
+        # packed = pack('<' + 'H' + 'B')
 
-    # ---------------------- Individual Segment Functions ----------------------#
-    # functions to simplify ESP32 messages
+        # check that the packed binary is smaller than 64kB
+        # print("Payload size: " + calcsize(packed))
+        print(actuationDataArray[:10])
+    # return packed
+    return False
 
+
+# ---------------------- Individual Segment Functions ----------------------#
+# functions to simplify ESP32 messages
 
 def segmentSub(segment_no):
     if getSegmentID(segment_no) != "Null":
@@ -305,9 +349,9 @@ def segmentAck(segment_no):
 
 def segmentSendData(segment_no):
     # send data to specific segment
+    data = packageSegmentData(segment_no)
     if getSegmentID(segment_no) != "Null":
         # loads, processes, and converts actuation data
-        data = packageSegmentData(segment_no)
         client.publish(segmentPathFn(segment_no, "data"), data, 1)
         return True
     else:
@@ -412,7 +456,7 @@ while True:
                 print("Invalid segment number")
             else:
                 # programming technique that runs the upload and if it succeeds prints the message
-                if segmentSendData(segment_no, "TEST_DATA_STRING"):
+                if segmentSendData(segment_no):
                     print("Uploaded data to segment # {}".format(segment_no))
                 else:
                     print("Upload failed")

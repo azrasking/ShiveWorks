@@ -16,6 +16,7 @@
 
 # Running an Experiment
 * Generate actuation data by running GEN.py with appropriate parameters
+  * Needs to be **run under Linux**
   * The script will generate many .csv files with the actuation data for each individual segment
   * The script should also plot of the actuation pattern
 * Power on the router (has to have access to the internet)
@@ -51,9 +52,8 @@
 * The overseer.py script will automatically connect to the MQTT broker, as they are usually running on the same machine
   
 ## Overseer.py Main Control Script
-  * Download and install [paho](https://pypi.org/project/paho-mqtt/)
-  * This scrips is used as a main translator between the simulation and the segments
-  * General MQTT command format is ''{{command}}::{{data}}
+  * Download and install [paho](https://pypi.org/project/paho-mqtt/) python library
+  * The overseer scrip is used as a main translator between the simulation and the segments
   * It is command line based, and any command that is typed in will be sent to the segments accordingly
 
 | Command             | Action                                                           |
@@ -74,6 +74,9 @@
 | clear_pairing -s 42 | Clears the pairing of segment 42                                 |
 | debug -s 42         | Writes script debug info for segment number 42                   |
 | move -s 42 -p 255   | Move segment 42 to position max position (255)                   |
+|                     |                                                                  |
+
+* General MQTT command string message format is `{{command}}::{{data}}` 
 
 <!-- implement a segment servo offset function -->
 
@@ -86,7 +89,7 @@
 * Once connected to the MQTT broker, the segment will automatically subscribe to the topic `ShiveWorks/overseer/command`
   * This is an equivalent to a command line that all segments will listen to
   * Servo is limited in main.cpp to min and max angle in degrees
-  * The **input range for the segment is then 0 to 255 8-bit unsigned integer number**
+  * The **input movement range for the segment is then 0 to 255** (an 8-bit unsigned integer number)
     * Ex.: if limited to 45 to 135 degrees of movement, a command of '0' will move the servo to 45 degrees, and a command of '255' will move the servo to 135 degrees
 * For newly flashed segments, the sequence number will have to be assigned
   * Press the button on the segment to initiate the segment number assignment - the indicator light should start blink purple
@@ -133,6 +136,7 @@
   * Might require installation of [ESP32 drivers](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)
   * If we want to see diagnostic information, we can use the Serial Monitor in the Arduino IDE with a baud rate of 115200
 * The latest version of the pre-combiled binary can be found under releases
+  * Connect the ESP32 with disconnected battery power to your PC using a micro-USB cable one at a time
   * Use the [ESPRESSIF Flash Tool](https://www.espressif.com/en/support/download/other-tools) to flash the .bin file to the ESP32
 
 <!-- * Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used

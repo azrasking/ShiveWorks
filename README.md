@@ -99,7 +99,7 @@
     * Timestamps are stored as 16-bit unsigned integers, so the number shall be between 0 and 65535 only
     * Actuation value is an 8-bit unsigned integer, so the number shall be between 0 and 255 only
       * with the exception that a .csv value of -100 means skip this actuation line
-    * The csv file generated for each segment shall be named `1.csv` and formatted with `timestamp, value` format - e.g. `1000,255` on each line
+    * The csv file generated for the *first* segment shall be named `1.csv` and formatted with `timestamp, value` format - e.g. `1000,255` on each line, other segments shall follow this format
 
  
 | Segment Status           | LED Indicator Light |
@@ -133,7 +133,7 @@
   * Might require installation of [ESP32 drivers](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)
   * If we want to see diagnostic information, we can use the Serial Monitor in the Arduino IDE with a baud rate of 115200
 * The latest version of the pre-combiled binary can be found under releases
-  * Use the [ESPRESSIF FLash Tool](https://www.espressif.com/en/support/download/other-tools) to flash the .bin file to the ESP32
+  * Use the [ESPRESSIF Flash Tool](https://www.espressif.com/en/support/download/other-tools) to flash the .bin file to the ESP32
 
 <!-- * Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
   * Compile and upload main.c to the ESP32

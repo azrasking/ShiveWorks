@@ -6,10 +6,9 @@ import paho.mqtt.client as mqtt
 import csv
 import time
 from datetime import datetime, timezone
+from struct import pack, unpack
 
 # ---TODO--- #
-# 1. NTP time sync
-# 2. upload working
 
 
 # ---------------------- MQTT Setup----------------------#
@@ -21,6 +20,9 @@ overseerReturnPath = "ShiveWorks/overseer/return"
 
 # expanded into ShiveWorks/segment/segmentID/command further below
 segmentPath = "ShiveWorks/segment"
+
+# local path to the folder containing the actuation data in .csv format
+actuationDataPath = "./Actuation_data"
 
 # local broker address, if the server runs on the same PC as the client never change it
 broker = "127.0.0.1"
@@ -45,6 +47,7 @@ def main():  # main method where the MQTT client is connected
 
 
 # --- MQTT Received Message Callback functions ---#
+
 latestOverseerReturnMessage = ""  # global storage of the latest message received
 # list of the status of all segments ordered by segment number
 statusList = [None]*segment_count
@@ -85,6 +88,7 @@ def on_message(client, userdata, message):
 
 
 # ---------------------- Dealing with segment identification ----------------------#
+
 segments_ID = []  # an ordered list of all the segments' ID's
 # this list is 100 elements long, with each element being a string
 filePath = "segmentsID.csv"
@@ -202,9 +206,71 @@ def clearSegmentsID():  # clear the segments ID list
     client.loop_stop()
     quit()
 
+# ---------------------- Actuation Data Conversion ----------------------#
 
-# ---------------------- Individual Segment Functions ----------------------#
-# functions to simplify ESP32 messages
+
+# a 2D array to hold the actuation time and value [[1000, 255], [1001, 254]]
+# timestamps are stored as 16-bit unsigned integers, so the number shall be between 0 and 65535 only
+# actuation value is an 8-bit unsigned integer, so the number shall be between 0 and 255 only
+#   with the exception that a .csv value of -100 means skip this actuation line
+actuationDataArray = []
+
+
+# function to first load the .csv file from the folder (if it exists) into an array while type-checking
+def loadSegmentData(segment_no):
+    segmentDataPath = actuationDataPath + '/' + segment_no + ".csv"
+    actuationDataArray.clear()
+
+    try:
+        with open(segmentDataPath, 'r') as file:
+            reader = csv.reader(file, delimiter=',')
+            # go through each row and convert them to the [time, value] format
+            for row in reader:
+                row_clean = convertSegmentData(row)
+
+                if row_clean:  # if the array not empty, append it
+                    actuationDataArray.append(row_clean)
+        # print(actuationDataArray)
+        return True
+
+    except Exception as e:
+        print("Failed to load segments data: {}".format(e))
+        return False
+
+
+# function that checks the timestamp and value validity
+def convertSegmentData(CSV_row):
+    CSV_row_clean = []
+
+    timestamp = int(CSV_row[0])
+    if timestamp < 0 or timestamp > 65535:
+        raise ValueError("Invalid timestamp: {}".format(timestamp))
+
+    value = int(CSV_row[1])
+
+    if value == -100:
+        return CSV_row_clean
+
+    if value > 255 or value < 0:
+        raise ValueError("Actuation value is out of range: {}".format(value))
+
+    CSV_row_clean.append(timestamp)
+    CSV_row_clean.append(value)
+    return CSV_row_clean
+
+
+# function that takes the processed data and returns a struct formatted as binary uint16_t, uint8_t, ...
+def packageSegmentData(segment_no):
+    if loadSegmentData(segment_no):
+        # formatting for the ESP32 shall be little-endian, 2-byte unsigned short, 1-byte unsigned char
+        packed = pack('<' + 'H' + 'B')    
+    
+    return packed
+    
+
+    # ---------------------- Individual Segment Functions ----------------------#
+    # functions to simplify ESP32 messages
+
 
 def segmentSub(segment_no):
     if getSegmentID(segment_no) != "Null":
@@ -224,6 +290,7 @@ def segmentUnSub(segment_no):
         return False
 
 
+# sends a predefined command to an individual segment
 def segmentCommand(segment_no, command):
     if getSegmentID(segment_no) != "Null":
         client.publish(segmentPathFn(segment_no, "command"), command, 1)
@@ -236,9 +303,11 @@ def segmentAck(segment_no):
     return segmentCommand(segment_no, "ack")
 
 
-def segmentSendData(segment_no, data):
+def segmentSendData(segment_no):
     # send data to specific segment
     if getSegmentID(segment_no) != "Null":
+        # loads, processes, and converts actuation data
+        data = packageSegmentData(segment_no)
         client.publish(segmentPathFn(segment_no, "data"), data, 1)
         return True
     else:
@@ -248,6 +317,8 @@ def segmentSendData(segment_no, data):
 def segmentMasterCommand(command):
     # command to the overseer master topic that goes to all segments
     client.publish(overseerCommandPath, command, 1)
+
+
 # ---------------------#
 
 

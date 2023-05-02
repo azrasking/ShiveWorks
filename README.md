@@ -18,11 +18,14 @@
 * Generate actuation data by running GEN.py with appropriate parameters
   * The script will generate many .csv files with the actuation data for each individual segment
   * The script should also plot of the actuation pattern
-* Start the MQTT broker 
+* Power on the router (has to have access to the internet)
+  * Connect your PC
+  * Start the MQTT broker server
 * Run the overseer.py python script - issue commands by typing a command into the terminal
   * Pair all the modules, and upload the experiment parameters to the ESP32 modules/segments
     * Reference table below for light indicating segment status
-  * Keep in mind that maximum payload size is 64kBytes and the maximum timestamp is 65000 milliseconds
+  * Keep in mind that maximum payload size is 64kBytes and the maximum timestamp is 65 535 milliseconds
+    * [This is because time is stored as a 16-bit unsigned integer in milliseconds]
   * After running the experiment the data will loop forever
 * Segment should start to light up and the indicator light should blink green indicating it is ready
 * Issue a "start" command that will begin a countdown sequence, the indicator light will become solid green for the duration of the experiment
@@ -40,12 +43,12 @@
   * An [MQTT Explorer](https://mqtt-explorer.com/) is recommended to monitor the MQTT messages
 
 ## Network Configuration
-* The overseer.py script will automatically connect to the MQTT broker, as they are usually running on the same machine
 * Connect your computer to the same WiFi network as the ESP32 modules, the network should have access to the outside internet for NTP synchronization
 * Configure your machine to have a static IP address on the same network as the ESP32 modules (using Windows Network and Sharing Center)
   * Set the network type as private
-  * The default is 192.168.1.1; this should be outside the dynamic DHCP range of the router
+  * The default IP address your PC (= MQTT server) is 192.168.1.1; this should be outside the dynamic DHCP range of the router
     * Subnet mask is 255.255.254.0, gateway is 192.168.1.0, primary DNS is 192.168.1.0
+* The overseer.py script will automatically connect to the MQTT broker, as they are usually running on the same machine
   
 ## Overseer.py Main Control Script
   * Download and install [paho](https://pypi.org/project/paho-mqtt/)
@@ -76,10 +79,10 @@
 
 
 # Experiment Setup
-## Segment Power Up and Identification
+## Segment Power Up and Pairing
 * Power up the segment - upon initialization the indicator light should light up blue
 * ESP32 will connect to the local MQTT broker - upon connection the indicator light should blink blue
-  * If the segment is unable to connect to the MQTT broker, the indicator light will become solid red indicating a fault
+  * If the segment is unable to connect to the MQTT broker, the indicator light will turn blinking red indicating a fault
 * Once connected to the MQTT broker, the segment will automatically subscribe to the topic `ShiveWorks/overseer/command`
   * This is an equivalent to a command line that all segments will listen to
   * Servo is limited in main.cpp to min and max angle in degrees
@@ -93,6 +96,10 @@
   * This is topic with transmit (`/return`), command (`/command`), obtain actuation data (`/data`) and status (`/status`) channels for to the specific segment
   * Longest command shall be 128 bytes long
   * Experiment data is stored separately from the message, maximum size is 64kB
+    * Timestamps are stored as 16-bit unsigned integers, so the number shall be between 0 and 65535 only
+    * Actuation value is an 8-bit unsigned integer, so the number shall be between 0 and 255 only
+      * with the exception that a .csv value of -100 means skip this actuation line
+    * The csv file generated for each segment shall be named `1.csv` and formatted with `timestamp, value` format - e.g. `1000,255` on each line
 
  
 | Segment Status           | LED Indicator Light |
@@ -118,15 +125,20 @@
 
 
 ## ESP32 Segment Code Upload
-* Segments are numbered starting from 1
+* Segments are numbered starting from 1 to 100
 * All source files are in WaveSegment folder, in the 'src' directory
 * Enter correct local WiFi credential and MQTT broker IP address in credentials.h (rename and fill out sample_credentials.h)
 * Compile and upload main.c to the ESP32
+  * Connect the ESP32 with disconnected battery power to your PC using a micro-USB cable one at a time
   * Might require installation of [ESP32 drivers](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)
   * If we want to see diagnostic information, we can use the Serial Monitor in the Arduino IDE with a baud rate of 115200
+* The latest version of the pre-combiled binary can be found under releases
+  * Use the [ESPRESSIF FLash Tool](https://www.espressif.com/en/support/download/other-tools) to flash the .bin file to the ESP32
+
 <!-- * Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
   * Compile and upload main.c to the ESP32
   * Run `python3 OTA.py` to upload the sketch to the ESP32 over WiFi -->
+
 ![Segment Circuit](./Media/ShiveSegmentCircuit.png)
 
 

@@ -41,8 +41,8 @@ CRGB leds[2]; // an array of 2 LEDs
 Servo servo;
 // servo is in degrees, where 0° is 500uS and 180° is 2500uS
 // limit the servo to 45 to 135 degrees physically so as not to damage the segment
-const int servoMin = 45;
-const int servoMax = 135;
+const int servoMin = 40;
+const int servoMax = 140;
 void moveServo(int angleMQTT)
 {
 
@@ -424,6 +424,9 @@ bool handleMQTTmessage()
 
   if (receivedTopic == getSegmentDataPath())
   {
+    static uint16_t currentActuationTimestamp = 0, lastActuationTimestamp = 0;
+    static uint8_t currentActuationValue = 0, lastActuationValue = 0;
+    static uint16_t currentActuationIndex = 0;
     return true;
   }
   // if the topic is not recognized, return false

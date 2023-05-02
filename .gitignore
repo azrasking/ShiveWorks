@@ -2,3 +2,4 @@ credentials.h
 .pio/build
 .vscode
 platformio.ini
+Actuation_data

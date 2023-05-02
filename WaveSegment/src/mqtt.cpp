@@ -187,10 +187,10 @@ bool messageReceived = false; // flag for received message
 
 byte *receivedMessage = new byte[maxMessageLength + 1]; //  shared buffer pointer for received messages
 // messages are null-terminated strings, so we need to allocate one extra byte for the null character
-unsigned int receivedMessageLength = 0; // length of received message
+uint16_t receivedMessageLength = 0; // length of received message
 
 byte *receivedData = new byte[maxDataLength]; // shared buffer pointer for received data
-unsigned int receivedDataLength = 0;          // length of received data
+uint16_t receivedDataLength = 0;              // length of received data
 
 void callbackMSG(char *topic, byte *payload, unsigned int length)
 {
@@ -234,7 +234,7 @@ void callbackMSG(char *topic, byte *payload, unsigned int length)
         else
         {
             // command payload will always be a string
-            for (int i = 0; i < length; i++)
+            for (uint16_t i = 0; i < length; i++)
             {
                 receivedMessage[i] = (byte)payload[i];
             }

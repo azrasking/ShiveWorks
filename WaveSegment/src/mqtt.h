@@ -28,6 +28,6 @@ void callbackMSG(char *topic, byte *payload, unsigned int length); //callback fu
 extern String receivedTopic;         //shared buffer for received topic
 extern byte* receivedMessage;        //shared buffer for received messages
 extern byte* receivedData; //shared buffer for received
-extern unsigned int receivedMessageLength; //length of received message
-extern unsigned int receivedDataLength; //length of received message
+extern uint16_t receivedMessageLength; //length of received message
+extern uint16_t receivedDataLength; //length of received message
 extern bool messageReceived;        //flag for received message

@@ -54,6 +54,7 @@ void moveServo(int angleMQTT)
 //------------------------------------//---MISC function stubs
 
 void beginPairing(); // do not remove as the function is defined lower in the program, but needs to be called before it is defined
+void actuate();
 
 //------------------------------------//---UI
 
@@ -317,17 +318,6 @@ void setup()
   sendSegmentStatus("Connected");
 }
 
-//------------------------------------//---state machine
-
-void beginPairing()
-{
-  // send the ID to the overseer
-  String message = "pairing::" + String(ESP.getEfuseMac(), HEX);
-  client.publish(overseerReturnPath, message.c_str());
-  sendSegmentStatus("Pairing");
-  currSegmentStatus = Pairing;
-}
-
 //------------------------------------//---MQTT message handling
 
 // a generic function that represents the overseer acknowledging receipt of a message
@@ -350,6 +340,7 @@ bool handleMQTTmessage()
     }
     else if (commandStr == "start")
     {
+      currSegmentStatus = Running;
     }
     else if (commandStr == "reset")
     {
@@ -424,13 +415,57 @@ bool handleMQTTmessage()
 
   if (receivedTopic == getSegmentDataPath())
   {
-    static uint16_t currentActuationTimestamp = 0, lastActuationTimestamp = 0;
-    static uint8_t currentActuationValue = 0, lastActuationValue = 0;
-    static uint16_t currentActuationIndex = 0;
+    actuate();
+    currSegmentStatus = Ready;
     return true;
   }
   // if the topic is not recognized, return false
   return false;
+}
+
+//------------------------------------//---state machine
+
+void beginPairing()
+{
+  // send the ID to the overseer
+  String message = "pairing::" + String(ESP.getEfuseMac(), HEX);
+  client.publish(overseerReturnPath, message.c_str());
+  sendSegmentStatus("Pairing");
+  currSegmentStatus = Pairing;
+}
+
+static uint16_t ActuationTimestamp = 0;
+static uint8_t ActuationValue = 0;
+static uint16_t nextActuationTriByteIndex = 0;
+
+void nextActuationValue()
+{
+  // data format is always 3 bytes in little endian format:
+  //    2 bytes representing the timestamp as uint16_t
+  //    1 byte representing the material value as uint8_t
+
+  byte byteOne = receivedData[nextActuationTriByteIndex * 3 + 0];
+  byte byteTwo = receivedData[nextActuationTriByteIndex * 3 + 1];
+  byte byteThree = receivedData[nextActuationTriByteIndex * 3 + 2];
+
+  ActuationTimestamp = (byteTwo << 8) + byteOne;
+  ActuationValue = byteThree;
+  nextActuationTriByteIndex++;
+
+  if (nextActuationTriByteIndex * 3 >= receivedDataLength) // we have reached the end of actuation data
+  {
+    nextActuationTriByteIndex = 0;
+    // TODO add offset of the maximum timestamp to a global repeat offset
+  }
+
+  // Serial.println(ActuationTimestamp);
+  // Serial.println(ActuationValue);
+}
+
+void actuate()
+{
+  nextActuationValue();
+  moveServo(ActuationValue);
 }
 
 //------------------------------------//---loop
@@ -485,11 +520,13 @@ void loop()
     break;
 
   case Ready:
-    // do stuff
+    // wait for start command
     break;
 
   case Running:
-    // do stuff
+
+    actuate();
+
     break;
 
   case Estop:       // emergency stop state: keep connected, but don't physically move

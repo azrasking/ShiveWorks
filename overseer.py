@@ -6,7 +6,8 @@ import paho.mqtt.client as mqtt
 import csv
 import time
 from datetime import datetime, timezone
-from struct import pack, unpack, calcsize
+from struct import pack, unpack
+from sys import getsizeof
 
 # ---TODO--- #
 
@@ -254,9 +255,9 @@ def loadSegmentData(segment_no):
     lastRow[0] = int(lastRow[0])
     lastRow[1] = int(lastRow[1])
 
-    print(firstRow)
-    print(lastRow)
-    print(actuationDataArray)
+    # print(firstRow)
+    # print(lastRow)
+    # print(actuationDataArray)
 
     # if the first row is value-empty, then write the default middle value
     if firstRow[1] == -100:
@@ -270,8 +271,9 @@ def loadSegmentData(segment_no):
         lastActuationData = actuationDataArray[-1][1]
         actuationDataArray.append([lastTimestamp, lastActuationData])
 
-    print(firstRow)
-    print(lastRow)
+    # print("----")
+    # print(firstRow)
+    # print(lastRow)
     print(actuationDataArray)
 
     return True
@@ -302,15 +304,23 @@ def convertSegmentData(CSV_row):
 # function that takes the processed data and returns a struct formatted as binary uint16_t, uint8_t, ...
 def packageSegmentData(segment_no):
     global actuationDataArray
+    # https://docs.python.org/3.7/library/struct.html#struct.pack_into
     if loadSegmentData(segment_no):
         # formatting for the ESP32 shall be little-endian, 2-byte unsigned short, 1-byte unsigned char
-        # packed = pack('<' + 'H' + 'B')
+        packed_binary = bytes()
+        # packed_binary = pack('<' + 'HB' * len(actuationDataArray), *actuationDataArray[:][0], *actuationDataArray[:][1])
 
+        for i in range(len(actuationDataArray)):
+            packed_binary += pack('<' + 'HB',
+                                  actuationDataArray[i][0], actuationDataArray[i][1])
+
+        # print(packed_binary)
+        # print(unpack('<' + 'HB' * len(actuationDataArray), packed_binary))
         # check that the packed binary is smaller than 64kB
-        # print("Payload size: " + calcsize(packed))
-        print(actuationDataArray[:10])
-    # return packed
-    return False
+        # print("Payload size: " + str(getsizeof(packed_binary)))
+        return packed_binary
+    # return packed byte struct
+    return None
 
 
 # ---------------------- Individual Segment Functions ----------------------#
@@ -350,7 +360,7 @@ def segmentAck(segment_no):
 def segmentSendData(segment_no):
     # send data to specific segment
     data = packageSegmentData(segment_no)
-    if getSegmentID(segment_no) != "Null":
+    if getSegmentID(segment_no) != "Null" and data != None:
         # loads, processes, and converts actuation data
         client.publish(segmentPathFn(segment_no, "data"), data, 1)
         return True

@@ -9,7 +9,7 @@ WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
 //------------------------------------//---messages
-const uint16_t maxDataLength = 535, maxMessageLength = 128;
+const uint16_t maxDataLength = 65535, maxMessageLength = 128;
 const char *overseerCommandPath = "ShiveWorks/overseer/command";
 const char *overseerReturnPath = "ShiveWorks/overseer/return";
 // auto-assigned is the unique MAC address of the ESP32 backwards in HEX
@@ -197,13 +197,13 @@ void callbackMSG(char *topic, byte *payload, unsigned int length)
 #ifdef DEBUG
     Serial.print(topic);
     Serial.print(" | ");
-    if (length <= 64)
+    if (length <= 32)
     {
         Serial.write(payload, length);
     }
     else
     {
-        Serial.write(payload, 64);
+        Serial.write(payload, 32);
         Serial.print("...");
     }
     Serial.print("   | length: ");
@@ -215,6 +215,9 @@ void callbackMSG(char *topic, byte *payload, unsigned int length)
     if (length > maxDataLength - 1)
     {
         sendSegmentStatus("Warning: message is over maxDataLength set in mqtt.cpp");
+#ifdef DEBUG
+        Serial.println("Warning: message is over maxDataLength");
+#endif
     }
 
     else
@@ -224,7 +227,7 @@ void callbackMSG(char *topic, byte *payload, unsigned int length)
         if (receivedTopic == getSegmentDataPath())
         {
             // data payload will be a byte array
-            for (int i = 0; i < length; i++)
+            for (uint16_t i = 0; i < length; i++)
             {
                 receivedData[i] = (byte)payload[i];
             }
@@ -234,7 +237,7 @@ void callbackMSG(char *topic, byte *payload, unsigned int length)
         else
         {
             // command payload will always be a string
-            for (uint16_t i = 0; i < length; i++)
+            for (int i = 0; i < length; i++)
             {
                 receivedMessage[i] = (byte)payload[i];
             }

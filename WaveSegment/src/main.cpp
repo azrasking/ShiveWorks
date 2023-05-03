@@ -54,6 +54,7 @@ void moveServo(int angleMQTT)
 //------------------------------------//---MISC function stubs
 
 void beginPairing(); // do not remove as the function is defined lower in the program, but needs to be called before it is defined
+void resetActuationVars();
 void actuate();
 
 //------------------------------------//---UI
@@ -336,6 +337,11 @@ bool checkMQTTAcknowledged()
 // using global variables, and variables defined in mqtt.cpp to handle MQTT messages
 static int64_t actuationStartTime = 0, nextActuationTime = 0;
 static uint32_t timeOffset = 0;
+
+static uint16_t actuationTimestampNext = 0, actuationTimeStampLast = 0;
+static uint8_t actuationValueNext = 127, actuationValueLast = 127;
+static uint16_t nextActuationTriByteIndex = 0;
+
 bool handleMQTTmessage()
 {
   // check if the message is a command
@@ -367,7 +373,7 @@ bool handleMQTTmessage()
       {
         receivedData[i] = 0; // clear the buffer byte by byte
       }
-
+      resetActuationVars();
       currSegmentStatus = Paired;
     }
     else if (commandStr.startsWith("move")) // a manual move command {{move::angle}}
@@ -415,6 +421,7 @@ bool handleMQTTmessage()
         receivedData[i] = 0; // clear the buffer byte by byte
       }
 
+      resetActuationVars();
       currSegmentStatus = Paired;
     }
 
@@ -452,10 +459,26 @@ void beginPairing()
   currSegmentStatus = Pairing;
 }
 
-static uint16_t actuationTimestampNext = 0, actuationTimeStampLast = 0;
-static uint8_t actuationValueNext = 127, actuationValueLast = 127;
-static uint16_t nextActuationTriByteIndex = 0;
+// reset variables after a soft reset command
+void resetActuationVars()
+{
+  actuationStartTime = 0;
+  nextActuationTime = 0;
+  timeOffset = 0;
 
+  actuationTimestampNext = 0;
+  actuationTimeStampLast = 0;
+  actuationValueNext = 127;
+  actuationValueLast = 127;
+  nextActuationTriByteIndex = 0;
+
+  if (!servo.attached())
+  {
+    servo.attach(pin_servo);
+  }
+}
+
+// all global variables are defined a section above
 void nextActuationValue()
 {
   actuationTimeStampLast = actuationTimestampNext;

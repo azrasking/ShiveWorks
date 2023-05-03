@@ -137,7 +137,7 @@
   * Connect the ESP32 with disconnected battery power to your PC using a micro-USB cable one at a time
   * Might require installation of [ESP32 drivers](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)
   * If we want to see diagnostic information, we can use the Serial Monitor in the Arduino IDE with a baud rate of 115200
-* The latest version of the pre-combiled binary can be found under releases
+* The latest version of the pre-compiled firmware binary can be found under releases
   * Use the [ESPRESSIF Flash Tool](https://www.espressif.com/en/support/download/other-tools) to flash the .bin file to the ESP32
     * Click the three dots button and select the firmware.bin file
     * Set a memory offset of 0x10000, and click START to start the upload

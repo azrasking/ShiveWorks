@@ -60,7 +60,7 @@ void actuate();
 
 void buttonClick()
 {
-  if (currSegmentStatus != Pairing && currSegmentStatus != Estop && currSegmentStatus != Fault)
+  if (currSegmentStatus != Pairing && currSegmentStatus != Estop && currSegmentStatus != Fault && currSegmentStatus != Running)
     beginPairing();
   else
     currSegmentStatus = Fault; // change to Connected possibly
@@ -367,6 +367,8 @@ bool handleMQTTmessage()
       {
         receivedData[i] = 0; // clear the buffer byte by byte
       }
+
+      currSegmentStatus = Paired;
     }
     else if (commandStr.startsWith("move")) // a manual move command {{move::angle}}
     {
@@ -412,6 +414,8 @@ bool handleMQTTmessage()
       {
         receivedData[i] = 0; // clear the buffer byte by byte
       }
+
+      currSegmentStatus = Paired;
     }
 
     if (commandStr.startsWith("move")) // a manual move command {{move::angle}}
@@ -477,7 +481,6 @@ void nextActuationValue()
   }
   nextActuationTime = actuationStartTime + timeOffset + actuationTimestampNext; // lookahead timestamp
   // Serial.println(timeOffset + actuationTimestampNext);
-
   // Serial.println(actuationTimestamp);
   // Serial.println(actuationValue);
 }
@@ -500,9 +503,10 @@ void actuate()
 }
 
 //------------------------------------//---loop
-
+// the loop performance is ~ 400 Hz
 void loop()
 {
+
   button.tick();                // update the button state
   if (!client.loop())           // update the ESP32 MQTT client data and communication
     currSegmentStatus = Fault;  // if the client loop fails or is disconnected, set the status to fault

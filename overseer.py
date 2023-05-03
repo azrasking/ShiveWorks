@@ -433,7 +433,7 @@ while True:
             # after the command is issued, it shall send T-5s to all segments
             millisec = int((time.time() * 1000) + countdown_ms)
             segmentMasterCommand("start::{}".format(millisec))
-            print("Starting the experiment")
+            print("Starting the experiment in {} seconds".format(countdown_ms / 1000))
 
         case ["reset"]:
             segmentMasterCommand("reset")
@@ -453,9 +453,9 @@ while True:
             for segment_no in range(1, segment_count + 1):
                 # programming technique that runs the upload and if it succeeds prints the message
                 if segmentSendData(str(segment_no)):
-                    print("Uploaded data to segment # {}".format(segment_no))
+                    print("✓ Upload success to segment # {}".format(segment_no))
                 else:
-                    print("Upload failed to segment # {}".format(segment_no))
+                    print("✕ Upload failed to segment # {}".format(segment_no))
                 time.sleep(0.250)
             # client.publish(overseerCommandPath, "upload::all")
 
@@ -470,9 +470,9 @@ while True:
             for segment_no in range(1, segment_count + 1):
                 # programming technique that runs the upload and if it succeeds prints the message
                 if segment_restart(segment_no):
-                    print("Restarting the segment # {}".format(segment_no))
+                    print("✓ Restart success  on segment # {}".format(segment_no))
                 else:
-                    print("Restart failed on segment # {}".format(segment_no))
+                    print("✕ Restart failed on segment # {}".format(segment_no))
                 time.sleep(0.250)
 
         case ["clear_pairing"]:

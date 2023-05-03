@@ -7,7 +7,7 @@ import csv
 import time
 from datetime import datetime, timezone
 from struct import pack, unpack
-from sys import getsizeof
+# from sys import getsizeof
 
 # ---TODO--- #
 
@@ -15,7 +15,7 @@ from sys import getsizeof
 # ---------------------- MQTT Setup----------------------#
 # callback function for when a message is received and filter according to topic
 
-segment_count = 100  # number of segments
+segment_count = 20  # number of segments
 overseerCommandPath = "ShiveWorks/overseer/command"
 overseerReturnPath = "ShiveWorks/overseer/return"
 
@@ -24,6 +24,9 @@ segmentPath = "ShiveWorks/segment"
 
 # local path to the folder containing the actuation data in .csv format
 actuationDataPath = "./PropertyControlFunctions/Actuation_data"
+
+# milliseconds of countdown time after a "start" command is issued; do not set to less than 3000
+countdown_ms = 5000
 
 # local broker address, if the server runs on the same PC as the client never change it
 broker = "127.0.0.1"
@@ -274,7 +277,7 @@ def loadSegmentData(segment_no):
     # print("----")
     # print(firstRow)
     # print(lastRow)
-    print(actuationDataArray)
+    # print(actuationDataArray)
 
     return True
 
@@ -427,7 +430,9 @@ while True:
             print("Stopping the experiment")
 
         case ["start"]:
-            segmentMasterCommand("start")
+            # after the command is issued, it shall send T-5s to all segments
+            millisec = int((time.time() * 1000) + countdown_ms)
+            segmentMasterCommand("start::{}".format(millisec))
             print("Starting the experiment")
 
         case ["reset"]:
@@ -445,6 +450,13 @@ while True:
 
         case ["upload"]:
             print("Uploading data to all segments...")
+            for segment_no in range(1, segment_count + 1):
+                # programming technique that runs the upload and if it succeeds prints the message
+                if segmentSendData(str(segment_no)):
+                    print("Uploaded data to segment # {}".format(segment_no))
+                else:
+                    print("Upload failed to segment # {}".format(segment_no))
+                time.sleep(0.250)
             # client.publish(overseerCommandPath, "upload::all")
 
         case ["timesync"]:
@@ -452,6 +464,16 @@ while True:
             # get the current time in UTC so there are no issues with timezones and daylight savings
             now_utc = datetime.now(timezone.utc)
             # client.publish(overseerCommandPath, "timesync::all", 1)
+
+        case ["restart"]:
+            print("Restarting time in all segments")
+            for segment_no in range(1, segment_count + 1):
+                # programming technique that runs the upload and if it succeeds prints the message
+                if segment_restart(segment_no):
+                    print("Restarting the segment # {}".format(segment_no))
+                else:
+                    print("Restart failed on segment # {}".format(segment_no))
+                time.sleep(0.250)
 
         case ["clear_pairing"]:
             print("Clearing all segment IDs")
@@ -469,7 +491,7 @@ while True:
                 if segmentSendData(segment_no):
                     print("Uploaded data to segment # {}".format(segment_no))
                 else:
-                    print("Upload failed")
+                    print("Upload failed to segment # {}".format(segment_no))
 
         case ["move", *args] if '-s' and '-p' in args:  # move a specific segment
             segment_no = args[args.index('-s') + 1]

@@ -54,28 +54,29 @@
   
 ## Overseer.py Main Control Script
   * Download and install [paho](https://pypi.org/project/paho-mqtt/) python library
-  * The overseer scrip is used as a main translator between the simulation and the segments
+  * The overseer script is used as a main translator between the simulation and the segments
   * It is command line based, and any command that is typed in will be sent to the segments accordingly
 
-| Command             | Action                                                           |
-| ------------------- | ---------------------------------------------------------------- |
-| start               | Starts the countdown of 3 seconds                                |
-| stop                | Halts the experiment immediately                                 |
-| reset               | Resets all segments to pre-experiment stage                      |
-| upload              | Uploads the experiment parameters to all segments individually   |
-| timesync            | Syncs the time of the segments with NTP, syncs overseer with NTP |
-| clear_pairing       | Clears the pairing of segments                                   |
-| debug               | Writes script debug info                                         |
-| move -p 127         | Move all segments to position the middle (127)                   |
-| exit                | Exits the script                                                 |
-| assign -s 42        | Assigns any currently available segments to position 42          |
-| restart -s 42       | Restarts segment 42, same as holding down the physical button    |
-| upload -s 42        | Uploads the experiment parameters to segment 42                  |
-| timesync -s 42      | Syncs the time of segment 42 with NTP                            |
-| clear_pairing -s 42 | Clears the pairing of segment 42                                 |
-| debug -s 42         | Writes script debug info for segment number 42                   |
-| move -s 42 -p 255   | Move segment 42 to position max position (255)                   |
-|                     |                                                                  |
+| Command             | Action                                                               |
+| ------------------- | -------------------------------------------------------------------- |
+| start               | Starts the countdown of 3 seconds                                    |
+| stop                | Halts the experiment immediately                                     |
+| ~~reset~~           | ~~Resets all segments to pre-experiment stage~~                      |
+| restart             | Restarts all segments, same as holding down the physical button      |
+| upload              | Uploads the experiment parameters to all segments individually       |
+| ~~timesync~~        | ~~Syncs the time of the segments with NTP, syncs overseer with NTP~~ |
+| clear_pairing       | Clears the pairing of segments                                       |
+| debug               | Writes script debug info                                             |
+| move -p 127         | Move all segments to position the middle (127)                       |
+| exit                | Exits the script                                                     |
+| assign -s 42        | Assigns any currently available segments to position 42              |
+| restart -s 42       | Restarts segment 42, same as holding down the physical button        |
+| upload -s 42        | Uploads the experiment parameters to segment 42                      |
+| ~~timesync -s 42~~  | ~~Syncs the time of segment 42 with NTP~~                            |
+| clear_pairing -s 42 | Clears the pairing of segment 42                                     |
+| debug -s 42         | Writes script debug info for segment number 42                       |
+| move -s 42 -p 255   | Move segment 42 to position max position (255)                       |
+|                     |                                                                      |
 
 * General MQTT command string message format is `{{command}}::{{data}}` 
 

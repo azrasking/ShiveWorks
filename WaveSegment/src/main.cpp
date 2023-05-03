@@ -314,6 +314,12 @@ void setup()
   // subscribe to the data topic for this segment
   client.subscribe(getSegmentDataPath().c_str(), 1); // c_str() converts the String to a char array
 
+  // synchronize time with NTP
+  NTPSetup() == true ? currSegmentStatus = Connected : currSegmentStatus = Fault;
+  if (currSegmentStatus == Fault) // early exit if the wifi connection fails
+    return;
+  delay(250);
+
   // update the segment's status
   sendSegmentStatus("Connected");
 }
@@ -328,6 +334,8 @@ bool checkMQTTAcknowledged()
 };
 
 // using global variables, and variables defined in mqtt.cpp to handle MQTT messages
+static int64_t actuationStartTime = 0, nextActuationTime = 0;
+static uint32_t timeOffset = 0;
 bool handleMQTTmessage()
 {
   // check if the message is a command
@@ -338,9 +346,15 @@ bool handleMQTTmessage()
     {
       currSegmentStatus = Estop; // detaches the servo from the microcontroller
     }
-    else if (commandStr == "start")
+    else if (commandStr.startsWith("start"))
     {
-      currSegmentStatus = Running;
+      if (currSegmentStatus == Ready)
+      {
+        int colonIndex = commandStr.lastIndexOf(":");
+        // convert the epoch milliseconds received; first string to const char*; second const char* to long long (int64_t)
+        actuationStartTime = atoll(commandStr.substring(colonIndex + 1).c_str());
+        currSegmentStatus = Running;
+      }
     }
     else if (commandStr == "reset")
     {
@@ -415,7 +429,7 @@ bool handleMQTTmessage()
 
   if (receivedTopic == getSegmentDataPath())
   {
-    actuate();
+    moveServo(receivedData[2]); // pre-move to the starting position
     currSegmentStatus = Ready;
     return true;
   }
@@ -434,38 +448,55 @@ void beginPairing()
   currSegmentStatus = Pairing;
 }
 
-static uint16_t ActuationTimestamp = 0;
-static uint8_t ActuationValue = 0;
+static uint16_t actuationTimestampNext = 0, actuationTimeStampLast = 0;
+static uint8_t actuationValueNext = 127, actuationValueLast = 127;
 static uint16_t nextActuationTriByteIndex = 0;
 
 void nextActuationValue()
 {
+  actuationTimeStampLast = actuationTimestampNext;
+  actuationValueLast = actuationValueNext;
+
   // data format is always 3 bytes in little endian format:
   //    2 bytes representing the timestamp as uint16_t
   //    1 byte representing the material value as uint8_t
-
   byte byteOne = receivedData[nextActuationTriByteIndex * 3 + 0];
   byte byteTwo = receivedData[nextActuationTriByteIndex * 3 + 1];
   byte byteThree = receivedData[nextActuationTriByteIndex * 3 + 2];
 
-  ActuationTimestamp = (byteTwo << 8) + byteOne;
-  ActuationValue = byteThree;
+  actuationTimestampNext = (byteTwo << 8) + byteOne;
+  actuationValueNext = byteThree;
   nextActuationTriByteIndex++;
 
   if (nextActuationTriByteIndex * 3 >= receivedDataLength) // we have reached the end of actuation data
   {
     nextActuationTriByteIndex = 0;
-    // TODO add offset of the maximum timestamp to a global repeat offset
+    timeOffset += actuationTimestampNext;
+    actuationTimestampNext = 0;
+    // Serial.println(timeOffset);
   }
+  nextActuationTime = actuationStartTime + timeOffset + actuationTimestampNext; // lookahead timestamp
+  // Serial.println(timeOffset + actuationTimestampNext);
 
-  // Serial.println(ActuationTimestamp);
-  // Serial.println(ActuationValue);
+  // Serial.println(actuationTimestamp);
+  // Serial.println(actuationValue);
 }
 
 void actuate()
 {
-  nextActuationValue();
-  moveServo(ActuationValue);
+  if (nextActuationTime == 0) // first program run
+  {
+    nextActuationValue();
+    actuationTimeStampLast = actuationTimestampNext;
+    actuationValueLast = actuationValueNext;
+    moveServo(actuationValueLast);
+  }
+
+  else if (NTP.millis() >= nextActuationTime) // actuate to the next position when the time comes
+  {
+    nextActuationValue();
+    moveServo(actuationValueLast);
+  }
 }
 
 //------------------------------------//---loop

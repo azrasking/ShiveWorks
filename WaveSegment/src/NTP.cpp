@@ -13,9 +13,9 @@ bool NTPSetup()
 {
     bool successInit = false;
     // time is kept in UTC format as to avoid any timezone or daylight savings issues
-    successInit = NTP.begin(ntpServer, false);
     NTP.setMaxNumSyncRetry(5);
     NTP.setNTPTimeout(retryTimeout);
+    successInit = NTP.begin(ntpServer, false);
     return successInit;
 }
 

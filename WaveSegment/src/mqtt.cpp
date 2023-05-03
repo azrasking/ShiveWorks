@@ -3,7 +3,7 @@
 #include <mqtt.h>
 #include <credentials.h>
 
-#define DEBUG
+// #define DEBUG
 
 WiFiClient wifiClient;
 PubSubClient client(wifiClient);

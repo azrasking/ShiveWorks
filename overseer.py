@@ -15,7 +15,7 @@ from struct import pack, unpack
 # ---------------------- MQTT Setup----------------------#
 # callback function for when a message is received and filter according to topic
 
-segment_count = 20  # number of segments
+segment_count = 40  # number of segments
 overseerCommandPath = "ShiveWorks/overseer/command"
 overseerReturnPath = "ShiveWorks/overseer/return"
 
@@ -433,7 +433,8 @@ while True:
             # after the command is issued, it shall send T-5s to all segments
             millisec = int((time.time() * 1000) + countdown_ms)
             segmentMasterCommand("start::{}".format(millisec))
-            print("Starting the experiment in {} seconds".format(countdown_ms / 1000))
+            print("Starting the experiment in {} seconds".format(
+                countdown_ms / 1000))
 
         case ["reset"]:
             segmentMasterCommand("reset")

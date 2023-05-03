@@ -30,7 +30,7 @@ n1 = .5  # These are the spatial-temporal volume fractions of the periods
 # Functionally Graded(FG) smoothing properties in space and time -
 # Larger values give more smoothing
 smt_x = .1
-smt_t = .1  # Spatial-Temporal Smoothing
+smt_t = .5  # Spatial-Temporal Smoothing
 
 V = .1  # Lamination velocity -- Only Used for Lamination
 
@@ -52,7 +52,7 @@ xx = X.flatten(order='F')
 tt = T.flatten(order='F')
 
 #### Shive Machine- Set the number of spatial elements and the sample rate ####
-N_SpatElem = 20  # Number of Spatial Elements on the Device
+N_SpatElem = 40  # Number of Spatial Elements on the Device
 Mat1 = 0
 Mat2 = 255  # Material Range from Material 1 to Material 2
 t_SampPeri = 1/1000.  # Time Sample Period in Milliseconds

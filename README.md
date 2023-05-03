@@ -48,6 +48,7 @@
 * Connect your computer to the same WiFi network as the ESP32 modules, the network should have access to the outside internet for NTP synchronization
 * Configure your machine to have a static IP address on the same network as the ESP32 modules (using Windows Network and Sharing Center)
   * Set the network type as private
+  * Edit the IP address manually, use IPv4
   * The default IP address your PC (= MQTT server) is 192.168.1.1; this should be outside the dynamic DHCP range of the router
     * Subnet mask is 255.255.254.0, gateway is 192.168.1.0, primary DNS is 192.168.1.0
 * The overseer.py script will automatically connect to the MQTT broker, as they are usually running on the same machine
@@ -125,7 +126,7 @@
 | ----------------- | ------------------------------------ |
 | Button Tap        | Initiate Segment Position Assignment |
 | Button Double Tap | Segment Self-Test                    |
-| Button 2s+ hold   | Restart Segment                      |
+| Button 2s+ hold   | Restart Segment (until white light)  |
 |                   |                                      |
 
 
@@ -133,18 +134,23 @@
 * Segments are numbered starting from 1 to 100
 * All source files are in WaveSegment folder, in the 'src' directory
 * Enter correct local WiFi credential and MQTT broker IP address in credentials.h (rename and fill out sample_credentials.h)
-* Compile and upload main.c to the ESP32
-  * Connect the ESP32 with disconnected battery power to your PC using a micro-USB cable one at a time
-  * Might require installation of [ESP32 drivers](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)
-  * If we want to see diagnostic information, we can use the Serial Monitor in the Arduino IDE with a baud rate of 115200
+* Might require installation of [ESP32 drivers CP210x](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)
 * The latest version of the pre-compiled firmware binary can be found under releases
   * Use the [ESPRESSIF Flash Tool](https://www.espressif.com/en/support/download/other-tools) to flash the .bin file to the ESP32
-    * Click the three dots button and select the firmware.bin file
-    * Set a memory offset of 0x10000, and click START to start the upload
-    * Select a COM port (try multiple if it does not upload), SPI speed of 20MHz, DIO mode, and a BAUD rate of 115200
-  * Connect the ESP32 with disconnected battery power to your PC using a micro-USB cable one at a time
-  
+    1. Select the chip type as "ESP32", and WorkMode as "Develop", then click OK
+    2. Click the three dots button and select the bootloader.bin, partitions.bin, and firmware.bin file (can be found under releases)
+    3. Connect the ESP32 with disconnected battery power to your PC using a micro-USB cable one at a time
+    4. Set memory offsets and check the checkboxes next to the files 
+       1. Set to 0x1000 for the bootloader
+       2. Set to 0x8000 for the partitions
+       3. Set to 0x10000 for the firmware
+    5. Select a COM port (try different ones if it does not upload), SPI speed of 20MHz, DIO mode, and a BAUD rate of 115200
+    6. click START to start the upload
     ![test](./Media/flashTool.png)
+* Code can be compiled from scrath
+  * Compile main.c to the ESP32 platform (recommend use of PlatformIO extension in VSCode)
+  * Connect the ESP32 with disconnected battery power to your PC using a micro-USB cable one at a time
+  * If we want to see diagnostic information at segment runtime (once the segment code is uploaded), use the Serial Monitor in the Arduino IDE with a baud rate of 115200
 
 <!-- * Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
   * Compile and upload main.c to the ESP32

@@ -23,6 +23,7 @@
   * Connect your PC
   * Start the MQTT broker server
 * Run the overseer.py python script - issue commands by typing a command into the terminal
+  * If first run, run the `clear_pairing` command for good measure
   * Pair all the modules, and upload the experiment parameters to the ESP32 modules/segments
     * Reference table below for light indicating segment status
   * Keep in mind that maximum payload size is 64kBytes and the maximum timestamp is 65 535 milliseconds
@@ -136,15 +137,23 @@
   * Might require installation of [ESP32 drivers](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)
   * If we want to see diagnostic information, we can use the Serial Monitor in the Arduino IDE with a baud rate of 115200
 * The latest version of the pre-combiled binary can be found under releases
-  * Connect the ESP32 with disconnected battery power to your PC using a micro-USB cable one at a time
   * Use the [ESPRESSIF Flash Tool](https://www.espressif.com/en/support/download/other-tools) to flash the .bin file to the ESP32
+    * Click the three dots button and select the firmware.bin file
+    * Set a memory offset of 0x10000, and click START to start the upload
+    * Select a COM port (try multiple if it does not upload), SPI speed of 20MHz, DIO mode, and a BAUD rate of 115200
+  * Connect the ESP32 with disconnected battery power to your PC using a micro-USB cable one at a time
+  
+    ![test](./Media/flashTool.png)
 
 <!-- * Once the initial sketch has been uploaded through USB, for subsequent uploads an OTA method can be used
   * Compile and upload main.c to the ESP32
   * Run `python3 OTA.py` to upload the sketch to the ESP32 over WiFi -->
 
-![Segment Circuit](./Media/ShiveSegmentCircuit.png)
 
+
+## ESP32 Segment Circuit
+
+![Segment Circuit](./Media/ShiveSegmentCircuit.png)
 
 ### Component List
 * ESP32 DevKitV1

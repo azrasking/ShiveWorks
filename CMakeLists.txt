@@ -1,0 +1,280 @@
+cmake_minimum_required(VERSION 3.26)
+project(ShiveWorks)
+
+set(CMAKE_CXX_STANDARD 14)
+
+include_directories(WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples/analogWriteExample)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples/Knob)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples/Multiple-Servo-Example-Arduino)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples/PWMExample)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples/Sweep)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples/ToneExample)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/src)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/ESPNtpClient/examples/advancedExample)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/ESPNtpClient/examples/basicExample)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/ESPNtpClient/examples/ledFlasher)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/ESPNtpClient/src)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/AnalogOutput)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Blink)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/ColorPalette)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/ColorTemperature)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Cylon)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/DemoReel100)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Fire2012)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Fire2012WithPalette)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/FirstLight)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple/ArrayOfLedArrays)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple/MirroringSample)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple/MultiArrays)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple/MultipleStripsInOneArray)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple/OctoWS2811Demo)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple/ParallelOutputDemo)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Noise)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/NoisePlayground)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/NoisePlusPalette)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Pacifica)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Pintest)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Ports)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Ports/PJRCSpectrumAnalyzer)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Pride2015)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/RGBCalibrate)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/RGBSetDemo)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/SmartMatrix)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/TwinkleFox)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/XYMatrix)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/lib8tion)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/apollo3)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/common)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/d21)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/d51)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k20)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k66)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/kl26)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/mxrt1062)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf51)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf52)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/sam)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/stm32)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/avr)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/32)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/8266)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/OneButton/examples)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/OneButton/examples/BlinkMachine)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/OneButton/examples/InterruptOneButton)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/OneButton/examples/SimpleOneButton)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/OneButton/examples/SpecialInput)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/OneButton/examples/TwoButtons)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/OneButton/src)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_auth)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_basic)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_esp8266)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_large_message)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_publish_in_callback)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_reconnect_nonblocking)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_stream)
+include_directories(WaveSegment/.pio/libdeps/esp32dev/PubSubClient/src)
+include_directories(WaveSegment/src)
+
+add_executable(ShiveWorks
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples/analogWriteExample/analogWriteExample.ino
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples/Knob/Knob.ino
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples/Multiple-Servo-Example-Arduino/Multiple-Servo-Example-Arduino.ino
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples/PWMExample/PWMExample.ino
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples/Sweep/Sweep.ino
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/examples/ToneExample/ToneExample.ino
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/src/analogWrite.cpp
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/src/analogWrite.h
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/src/ESP32PWM.cpp
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/src/ESP32PWM.h
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/src/ESP32Servo.cpp
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/src/ESP32Servo.h
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/src/ESP32Tone.cpp
+        WaveSegment/.pio/libdeps/esp32dev/ESP32Servo/src/ESP32Tone.h
+        WaveSegment/.pio/libdeps/esp32dev/ESPNtpClient/examples/advancedExample/advancedExample.ino
+        WaveSegment/.pio/libdeps/esp32dev/ESPNtpClient/examples/basicExample/basicExample.ino
+        WaveSegment/.pio/libdeps/esp32dev/ESPNtpClient/examples/ledFlasher/ledFlasher.ino
+        WaveSegment/.pio/libdeps/esp32dev/ESPNtpClient/examples/platformio/main.cpp
+        WaveSegment/.pio/libdeps/esp32dev/ESPNtpClient/src/ESPNtpClient.cpp
+        WaveSegment/.pio/libdeps/esp32dev/ESPNtpClient/src/ESPNtpClient.h
+        WaveSegment/.pio/libdeps/esp32dev/ESPNtpClient/src/NTPEventTypes.h
+        WaveSegment/.pio/libdeps/esp32dev/ESPNtpClient/src/TZdef.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/AnalogOutput/AnalogOutput.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Blink/Blink.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/ColorPalette/ColorPalette.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/ColorTemperature/ColorTemperature.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Cylon/Cylon.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/DemoReel100/DemoReel100.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Fire2012/Fire2012.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Fire2012WithPalette/Fire2012WithPalette.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/FirstLight/FirstLight.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple/ArrayOfLedArrays/ArrayOfLedArrays.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple/MirroringSample/MirroringSample.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple/MultiArrays/MultiArrays.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple/MultipleStripsInOneArray/MultipleStripsInOneArray.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple/OctoWS2811Demo/OctoWS2811Demo.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Multiple/ParallelOutputDemo/ParallelOutputDemo.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Noise/Noise.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/NoisePlayground/NoisePlayground.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/NoisePlusPalette/NoisePlusPalette.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Pacifica/Pacifica.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Pintest/Pintest.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Ports/PJRCSpectrumAnalyzer/PJRCSpectrumAnalyzer.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/Pride2015/Pride2015.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/RGBCalibrate/RGBCalibrate.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/RGBSetDemo/RGBSetDemo.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/SmartMatrix/SmartMatrix.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/TwinkleFox/TwinkleFox.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/examples/XYMatrix/XYMatrix.ino
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/lib8tion/math8.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/lib8tion/random8.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/lib8tion/scale8.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/lib8tion/trig8.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/apollo3/clockless_apollo3.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/apollo3/fastled_apollo3.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/apollo3/fastpin_apollo3.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/apollo3/fastspi_apollo3.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/apollo3/led_sysdefs_apollo3.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/common/m0clockless.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/d21/clockless_arm_d21.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/d21/fastled_arm_d21.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/d21/fastpin_arm_d21.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/d21/led_sysdefs_arm_d21.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/d51/clockless_arm_d51.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/d51/fastled_arm_d51.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/d51/fastpin_arm_d51.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/d51/led_sysdefs_arm_d51.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k20/clockless_arm_k20.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k20/clockless_block_arm_k20.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k20/fastled_arm_k20.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k20/fastpin_arm_k20.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k20/fastspi_arm_k20.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k20/led_sysdefs_arm_k20.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k20/octows2811_controller.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k20/smartmatrix_t3.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k20/ws2812serial_controller.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k66/clockless_arm_k66.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k66/clockless_block_arm_k66.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k66/fastled_arm_k66.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k66/fastpin_arm_k66.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k66/fastspi_arm_k66.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/k66/led_sysdefs_arm_k66.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/kl26/clockless_arm_kl26.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/kl26/fastled_arm_kl26.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/kl26/fastpin_arm_kl26.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/kl26/fastspi_arm_kl26.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/kl26/led_sysdefs_arm_kl26.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/mxrt1062/block_clockless_arm_mxrt1062.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/mxrt1062/clockless_arm_mxrt1062.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/mxrt1062/fastled_arm_mxrt1062.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/mxrt1062/fastpin_arm_mxrt1062.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/mxrt1062/fastspi_arm_mxrt1062.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/mxrt1062/led_sysdefs_arm_mxrt1062.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/mxrt1062/octows2811_controller.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf51/clockless_arm_nrf51.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf51/fastled_arm_nrf51.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf51/fastpin_arm_nrf51.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf51/fastspi_arm_nrf51.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf51/led_sysdefs_arm_nrf51.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf52/arbiter_nrf52.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf52/clockless_arm_nrf52.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf52/fastled_arm_nrf52.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf52/fastpin_arm_nrf52.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf52/fastpin_arm_nrf52_variants.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf52/fastspi_arm_nrf52.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/nrf52/led_sysdefs_arm_nrf52.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/sam/clockless_arm_sam.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/sam/clockless_block_arm_sam.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/sam/fastled_arm_sam.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/sam/fastpin_arm_sam.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/sam/fastspi_arm_sam.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/sam/led_sysdefs_arm_sam.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/stm32/clockless_arm_stm32.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/stm32/cm3_regs.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/stm32/fastled_arm_stm32.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/stm32/fastpin_arm_stm32.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/arm/stm32/led_sysdefs_arm_stm32.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/avr/clockless_trinket.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/avr/fastled_avr.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/avr/fastpin_avr.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/avr/fastspi_avr.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/avr/led_sysdefs_avr.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/32/clockless_block_esp32.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/32/clockless_i2s_esp32.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/32/clockless_rmt_esp32.cpp
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/32/clockless_rmt_esp32.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/32/fastled_esp32.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/32/fastpin_esp32.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/32/fastspi_esp32.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/32/led_sysdefs_esp32.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/8266/clockless_block_esp8266.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/8266/clockless_esp8266.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/8266/fastled_esp8266.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/8266/fastpin_esp8266.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/esp/8266/led_sysdefs_esp8266.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms/fastspi_ardunio_core.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/bitswap.cpp
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/bitswap.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/chipsets.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/color.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/colorpalettes.cpp
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/colorpalettes.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/colorutils.cpp
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/colorutils.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/controller.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/cpp_compat.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/dmx.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/FastLED.cpp
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/FastLED.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/fastled_config.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/fastled_delay.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/fastled_progmem.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/fastpin.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/fastspi.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/fastspi_bitbang.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/fastspi_dma.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/fastspi_nop.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/fastspi_ref.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/fastspi_types.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/hsv2rgb.cpp
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/hsv2rgb.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/led_sysdefs.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/lib8tion.cpp
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/lib8tion.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/noise.cpp
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/noise.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/pixelset.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/pixeltypes.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms.cpp
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/platforms.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/power_mgt.cpp
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/power_mgt.h
+        WaveSegment/.pio/libdeps/esp32dev/FastLED/src/wiring.cpp
+        WaveSegment/.pio/libdeps/esp32dev/OneButton/examples/BlinkMachine/BlinkMachine.ino
+        WaveSegment/.pio/libdeps/esp32dev/OneButton/examples/InterruptOneButton/InterruptOneButton.ino
+        WaveSegment/.pio/libdeps/esp32dev/OneButton/examples/SimpleOneButton/SimpleOneButton.ino
+        WaveSegment/.pio/libdeps/esp32dev/OneButton/examples/SpecialInput/SpecialInput.ino
+        WaveSegment/.pio/libdeps/esp32dev/OneButton/examples/TwoButtons/TwoButtons.ino
+        WaveSegment/.pio/libdeps/esp32dev/OneButton/src/OneButton.cpp
+        WaveSegment/.pio/libdeps/esp32dev/OneButton/src/OneButton.h
+        WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_auth/mqtt_auth.ino
+        WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_basic/mqtt_basic.ino
+        WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_esp8266/mqtt_esp8266.ino
+        WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_large_message/mqtt_large_message.ino
+        WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_publish_in_callback/mqtt_publish_in_callback.ino
+        WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_reconnect_nonblocking/mqtt_reconnect_nonblocking.ino
+        WaveSegment/.pio/libdeps/esp32dev/PubSubClient/examples/mqtt_stream/mqtt_stream.ino
+        WaveSegment/.pio/libdeps/esp32dev/PubSubClient/src/PubSubClient.cpp
+        WaveSegment/.pio/libdeps/esp32dev/PubSubClient/src/PubSubClient.h
+        WaveSegment/src/main.cpp
+        WaveSegment/src/mqtt.cpp
+        WaveSegment/src/mqtt.h
+        WaveSegment/src/NTP.cpp
+        WaveSegment/src/NTP.h
+        WaveSegment/src/sample_credentials.h)

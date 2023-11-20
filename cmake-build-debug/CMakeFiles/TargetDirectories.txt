@@ -1,0 +1,3 @@
+C:/Users/Ana/Desktop/Code/ShiveWorks/cmake-build-debug/CMakeFiles/ShiveWorks.dir
+C:/Users/Ana/Desktop/Code/ShiveWorks/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Ana/Desktop/Code/ShiveWorks/cmake-build-debug/CMakeFiles/rebuild_cache.dir
